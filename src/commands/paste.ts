@@ -4,7 +4,7 @@ import getDirectory from "../utils/getDirectory";
 import path = require("path");
 import getClipboardContent from "../utils/getClipboardContent";
 
-export default async function paste(dir: string) {    
+export default async function paste(dir: string | undefined) {    
     try{
         const config: string = workspace.getConfiguration("cloudclipboard").get<string>("configuration")!;
 
@@ -24,22 +24,27 @@ export default async function paste(dir: string) {
 
         if(connection?.label){
             const clipboard = await getClipboardContent(config, connection.label);
-            const newDir = path.join(dir, "cloud clipboard");
+            
+            if(dir === undefined){
+                const editor = window.activeTextEditor;
+                if(!editor) return window.showErrorMessage("No active editor found.");
 
-            await workspace.fs.createDirectory(Uri.file(path.join(dir, "cloud clipboard")));
-
-            const fileName = await window.showInputBox({ prompt: "Save As" });
-            if(fileName){
-                const filePath = Uri.file(path.join(newDir, fileName));
-                await workspace.fs.writeFile(filePath, Buffer.from(clipboard, 'utf-8'));
-
-                window.showInformationMessage(`Pasted ${connection.label} at ${fileName}`);
-                const createdFile = await workspace.openTextDocument(filePath);
-                await window.showTextDocument(createdFile);
+                const pasted = await editor.edit(editBuilder => {
+                    editBuilder.insert(editor.selection.active, clipboard);
+                })
             }else{
-                window.showInformationMessage(`Pasted cancelled`);
-            }
+                const fileName = await window.showInputBox({ prompt: "Save As" });
+                if(fileName){
+                    const filePath = Uri.file(path.join(dir, fileName));
+                    await workspace.fs.writeFile(filePath, Buffer.from(clipboard, 'utf-8'));
 
+                    window.showInformationMessage(`Pasted ${connection.label} at ${fileName}`);
+                    const createdFile = await workspace.openTextDocument(filePath);
+                    await window.showTextDocument(createdFile);
+                }else{
+                    window.showWarningMessage(`Paste cancelled.`);
+                }
+            }
         }else{
             window.showWarningMessage('Paste cancelled.');
         }

@@ -16,4 +16,7 @@ export default function registerAllCommands(context: ExtensionContext) {
             window.showErrorMessage('Error selecting directory.');
         }
     }));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.editorPaste', () => {
+        paste(undefined);
+    }));
 }
