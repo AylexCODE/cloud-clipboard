@@ -27,9 +27,19 @@ export default async function paste(dir: string) {
             const newDir = path.join(dir, "cloud clipboard");
 
             await workspace.fs.createDirectory(Uri.file(path.join(dir, "cloud clipboard")));
-            await workspace.fs.writeFile(Uri.file(path.join(newDir, "clipboard.txt")), Buffer.from(clipboard, 'utf-8'));
 
-            window.showInformationMessage(`Pasted ${connection.label} at ${newDir}`);
+            const fileName = await window.showInputBox({ prompt: "Save As" });
+            if(fileName){
+                const filePath = Uri.file(path.join(newDir, fileName));
+                await workspace.fs.writeFile(filePath, Buffer.from(clipboard, 'utf-8'));
+
+                window.showInformationMessage(`Pasted ${connection.label} at ${fileName}`);
+                const createdFile = await workspace.openTextDocument(filePath);
+                await window.showTextDocument(createdFile);
+            }else{
+                window.showInformationMessage(`Pasted cancelled`);
+            }
+
         }else{
             window.showWarningMessage('Paste cancelled.');
         }
