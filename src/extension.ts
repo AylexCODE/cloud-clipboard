@@ -1,9 +1,6 @@
-import * as vscode from 'vscode';
+import { ExtensionContext } from 'vscode';
+import registerAllCommands from './commands';
 
-export function activate(context: vscode.ExtensionContext) {
-	const command = vscode.commands.registerCommand('cloudclipboard.paste', () => {
-		vscode.window.showInformationMessage('Cloud Clipboard');
-	});
-
-	context.subscriptions.push(command);
+export function activate(context: ExtensionContext) {
+	registerAllCommands(context);
 }
