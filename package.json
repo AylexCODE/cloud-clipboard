@@ -14,6 +14,16 @@
 	"activationEvents": [],
 	"main": "./out/extension.js",
 	"contributes": {
+		"configuration": {
+			"title": "Cloud Clipboard",
+			"properties": {
+				"cloudclipboard.configuration": {
+					"type": "string",
+					"default": "",
+					"description": "Clipboard API Endpoint"
+				}
+			}
+		},
 		"commands": [
 			{
 				"command": "cloudclipboard.paste",
