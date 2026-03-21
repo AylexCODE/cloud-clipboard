@@ -1,13 +1,21 @@
 {
 	"name": "cloud-clipboard",
 	"displayName": "Cloud Clipboard",
-	"description": "Copy and paste text anywhere",
+	"description": "Copy and paste text anywhere.",
 	"version": "0.0.1",
 	"publisher": "AylexCODE",
-	"repository": "https://github.com/AylexCODE/cloud-clipboard",
+	"license": "MIT",
+	"icon": "img/icon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/AylexCODE/cloud-clipboard"
+	},
 	"engines": {
 		"vscode": "^1.100.0"
 	},
+	"extensionKind": [
+		"workspace"
+	],
 	"categories": [
 		"Other"
 	],
@@ -26,53 +34,53 @@
 		},
 		"commands": [
 			{
-				"command": "cloudclipboard.paste",
-				"title": "Cloud Clipboard Paste"
-			},
-			{
 				"command": "cloudclipboard.copy",
 				"title": "Cloud Clipboard Copy"
 			},
 			{
-				"command": "cloudclipboard.editorPaste",
+				"command": "cloudclipboard.paste",
 				"title": "Cloud Clipboard Paste"
 			},
 			{
 				"command": "cloudclipboard.editorCopy",
 				"title": "Cloud Clipboard Copy"
+			},
+			{
+				"command": "cloudclipboard.editorPaste",
+				"title": "Cloud Clipboard Paste"
 			}
 		],
 		"menus": {
 			"commandPalette": [
 				{
-					"command": "cloudclipboard.paste",
+					"command": "cloudclipboard.copy",
 					"when": "false" 
 				},
 				{
-					"command": "cloudclipboard.copy",
+					"command": "cloudclipboard.paste",
 					"when": "false" 
 				}
 			],
 			"explorer/context": [
 				{
-					"command": "cloudclipboard.paste",
+					"command": "cloudclipboard.copy",
 					"group": "navigation",
 					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
 				},
 				{
-					"command": "cloudclipboard.copy",
+					"command": "cloudclipboard.paste",
 					"group": "navigation",
 					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "cloudclipboard.editorPaste",
+					"command": "cloudclipboard.editorCopy",
 					"group": "navigation",
 					"when": "editorTextFocus"
 				},
 				{
-					"command": "cloudclipboard.editorCopy",
+					"command": "cloudclipboard.editorPaste",
 					"group": "navigation",
 					"when": "editorTextFocus"
 				}
