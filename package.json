@@ -35,14 +35,26 @@
 			}
 		],
 		"menus": {
-			"explorer/context": [
+			"commandPalette": [
 				{
 					"command": "cloudclipboard.paste",
-					"group": "navigation"
+					"when": "false" 
 				},
 				{
 					"command": "cloudclipboard.copy",
-					"group": "navigation"
+					"when": "false" 
+				}
+			],
+			"explorer/context": [
+				{
+					"command": "cloudclipboard.paste",
+					"group": "navigation",
+					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
+				},
+				{
+					"command": "cloudclipboard.copy",
+					"group": "navigation",
+					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
 				}
 			]
 		}
