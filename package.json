@@ -32,6 +32,14 @@
 			{
 				"command": "cloudclipboard.copy",
 				"title": "Cloud Clipboard Copy"
+			},
+			{
+				"command": "cloudclipboard.editorPaste",
+				"title": "Cloud Clipboard Paste"
+			},
+			{
+				"command": "cloudclipboard.editorCopy",
+				"title": "Cloud Clipboard Copy"
 			}
 		],
 		"menus": {
@@ -55,6 +63,18 @@
 					"command": "cloudclipboard.copy",
 					"group": "navigation",
 					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
+				}
+			],
+			"editor/context": [
+				{
+					"command": "cloudclipboard.editorPaste",
+					"group": "navigation",
+					"when": "editorTextFocus"
+				},
+				{
+					"command": "cloudclipboard.editorCopy",
+					"group": "navigation",
+					"when": "editorTextFocus"
 				}
 			]
 		}
