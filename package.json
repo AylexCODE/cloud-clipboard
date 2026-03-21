@@ -1,0 +1,36 @@
+{
+	"name": "cloud-clipboard",
+	"displayName": "Cloud Clipboard",
+	"description": "Copy and paste text anywhere",
+	"version": "0.0.1",
+	"publisher": "AylexCODE",
+	"repository": "https://github.com/AylexCODE/cloud-clipboard",
+	"engines": {
+		"vscode": "^1.100.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "cloudclipboard.paste",
+				"title": "Cloud Clipboard Paste"
+			},
+			{
+				"command": "cloudclipboard.copy",
+				"title": "Cloud Clipboard Copy"
+			}
+		]
+	},
+	"scripts": {
+		"compile": "tsc -p ./"
+	},
+	"devDependencies": {
+		"@types/node": "^22",
+		"@types/vscode": "^1.100.0",
+		"typescript": "^5.8.2"
+	}
+}
