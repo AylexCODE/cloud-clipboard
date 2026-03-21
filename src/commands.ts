@@ -5,7 +5,16 @@ import getDirectory from "./utils/getDirectory";
 
 export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri) => {
-        copy();
+        try{
+            const dir = await getDirectory(uri);
+            if(!dir) return window.showWarningMessage('Select a directory first.');
+            copy(dir);
+        }catch{
+            window.showErrorMessage('Error selecting directory.');
+        }
+    }));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.editorCopy', () => {
+        copy(undefined);
     }));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.paste', async(uri?: Uri) => {
         try{
