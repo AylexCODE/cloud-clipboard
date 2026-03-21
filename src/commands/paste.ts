@@ -29,9 +29,16 @@ export default async function paste(dir: string | undefined) {
                 const editor = window.activeTextEditor;
                 if(!editor) return window.showErrorMessage("No active editor found.");
 
+                const activeSelection = editor.selection;
                 const pasted = await editor.edit(editBuilder => {
-                    editBuilder.insert(editor.selection.active, clipboard);
-                })
+                    editBuilder.replace(activeSelection, clipboard);
+                });
+
+                if(!pasted){
+                    window.showWarningMessage('Paste error.');
+                }else{
+                    window.showInformationMessage(`Pasted ${connection.label} at line ${activeSelection.active.line + 1}`);
+                }
             }else{
                 const fileName = await window.showInputBox({ prompt: "Save As" });
                 if(fileName){
@@ -49,6 +56,6 @@ export default async function paste(dir: string | undefined) {
             window.showWarningMessage('Paste cancelled.');
         }
     }catch{
-        window.showErrorMessage('Error pasting.');
+        window.showErrorMessage('Paste error.');
     }
 }
