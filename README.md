@@ -3,7 +3,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![VS Code](https://img.shields.io/badge/VS%20Code-1.100.0+-blue.svg)](https://code.visualstudio.com/)
 [![Installs](https://img.shields.io/visual-studio-marketplace/i/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard)
-[![Rating](https://img.shields.io/visual-studio-marketplace/r/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard)
+<!-- [![Rating](https://img.shields.io/visual-studio-marketplace/r/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard) -->
 <!-- [![Version](https://img.shields.io/visual-studio-marketplace/v/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard) -->
 
 **Cloud Clipboard** is a lightweight tool that lets you copy code in one VS Code instance and paste it instantly in another, across different machines, OSs, or networks. No more emailing links to yourself or using messaging apps as temporary storage.

@@ -1,4 +1,4 @@
-import { Uri, window, workspace } from "vscode";
+import { commands, Uri, window, workspace } from "vscode";
 import path = require("path");
 import saveClipboardContent from "../utils/saveClipboardContent";
 import getFiles from "../utils/getFiles";
@@ -9,7 +9,11 @@ export default async function copy(dirs: Uri[] | undefined){
         const config = workspace.getConfiguration("cloudclipboard");
     
         if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("connection")!.trim().length === 0) {
-            window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
+            window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                if (selection === "Open Settings") {
+                    commands.executeCommand('workbench.action.openSettings', '@ext:AylexCODE.cloud-clipboard');
+                }
+            });
             return;
         }
     

@@ -1,3 +1,9 @@
+## 0.0.6 - 2026 March 22
+### Added
+- Open settings button shortcut when using commands if configured
+### Changed
+- Icon
+
 ## 0.0.5 - 2026 March 22
 ### Improved
 - Error handling, notification messages

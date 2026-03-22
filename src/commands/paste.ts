@@ -1,4 +1,4 @@
-import { Uri, window, workspace } from "vscode";
+import { commands, Uri, window, workspace } from "vscode";
 import path = require("path");
 
 import getConnections from "../utils/getConnectionLists";
@@ -12,7 +12,11 @@ export default async function paste(dir: string | undefined) {
 
         const connectionList = await getConnections(config);
         if(connectionList === undefined){
-            window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
+            window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                if (selection === "Open Settings") {
+                    commands.executeCommand('workbench.action.openSettings', '@ext:AylexCODE.cloud-clipboard');
+                }
+            });
             return;
         }
 
