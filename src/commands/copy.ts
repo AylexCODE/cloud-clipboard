@@ -11,7 +11,7 @@ export default async function copy(dirs: Uri[] | undefined){
         if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("connection")!.trim().length === 0) {
             window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
-                    commands.executeCommand('workbench.action.openSettings', '@ext:AylexCODE.cloud-clipboard');
+                    commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
                 }
             });
             return;
@@ -23,7 +23,7 @@ export default async function copy(dirs: Uri[] | undefined){
         const selection = editor.selection;
         const content = editor.document.getText(selection);
 
-        if(dirs === undefined) if(content.trim().length === 0) return window.showWarningMessage('Please highlight content to save.');
+        if(dirs === undefined) if(content.trim().length === 0) return window.showWarningMessage("Please highlight content to save.");
         
         const clipboard = await window.showInputBox({ prompt: "Copy As" });
         if(clipboard){
@@ -32,7 +32,7 @@ export default async function copy(dirs: Uri[] | undefined){
                 if(saved === 200){
                     window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
                 }else{
-                    window.showErrorMessage('An error occured while copying to cloud clipboard.');
+                    window.showErrorMessage("An error occured while copying to cloud clipboard.");
                 }
             }else{
                 let contents: ClipboardData[] = [];
@@ -57,14 +57,14 @@ export default async function copy(dirs: Uri[] | undefined){
                 if(saveStatus === 200){
                     window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
                 }else{
-                    window.showErrorMessage('An error occured while copying to cloud clipboard.');
+                    window.showErrorMessage("An error occured while copying to cloud clipboard.");
                 }
 
             }
         }else{
-            window.showWarningMessage('Copy cancelled.');
+            window.showWarningMessage("Copy cancelled.");
         }
     }catch{
-        window.showErrorMessage('Copy error.');
+        window.showErrorMessage("An error occured.");
     }
 }

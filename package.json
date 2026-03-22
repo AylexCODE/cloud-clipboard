@@ -2,7 +2,7 @@
 	"name": "cloud-clipboard",
 	"displayName": "Cloud Clipboard",
 	"description": "Copy and paste text anywhere.",
-	"version": "0.0.6",
+	"version": "0.1.0",
 	"publisher": "AylexCODE",
 	"license": "MIT",
 	"icon": "img/icon.png",
@@ -46,6 +46,10 @@
 				"title": "Cloud Clipboard Paste"
 			},
 			{
+				"command": "cloudclipboard.delete",
+				"title": "Cloud Clipboard Delete"
+			},
+			{
 				"command": "cloudclipboard.editorCopy",
 				"title": "Cloud Clipboard Copy"
 			},
@@ -58,11 +62,19 @@
 			"commandPalette": [
 				{
 					"command": "cloudclipboard.copy",
-					"when": "false" 
+					"when": "false"
 				},
 				{
 					"command": "cloudclipboard.paste",
-					"when": "false" 
+					"when": "false"
+				},
+				{
+					"command": "cloudclipboard.editorCopy",
+					"when": "false"
+				},
+				{
+					"command": "cloudclipboard.editorPaste",
+					"when": "false"
 				}
 			],
 			"explorer/context": [

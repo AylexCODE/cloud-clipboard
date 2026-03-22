@@ -14,7 +14,7 @@ export default async function paste(dir: string | undefined) {
         if(connectionList === undefined){
             window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
-                    commands.executeCommand('workbench.action.openSettings', '@ext:AylexCODE.cloud-clipboard');
+                    commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
                 }
             });
             return;
@@ -23,6 +23,8 @@ export default async function paste(dir: string | undefined) {
         const items = connectionList.map((conn) => {
             return { label: conn };
         });
+
+        if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the connection ${config.get<string>("connection")!}`);
 
         const clipboardList = await window.showQuickPick(items, {
             canPickMany: false,
@@ -42,53 +44,53 @@ export default async function paste(dir: string | undefined) {
                             editBuilder.replace(selection, clipboard[0].content);
                         });
 
-                        if(!pasted) return window.showWarningMessage('Paste error.');
+                        if(!pasted) return window.showWarningMessage("Paste error.");
                         
                         window.showInformationMessage(`Pasted ${clipboardList.label} at line ${selection.active.line + 1}`);
                     }else if(clipboard.length !== 0){
                         const folderName = await window.showInputBox({ prompt: "Save To Folder" });
-                        if(!folderName) return window.showWarningMessage(`Paste cancelled.`);
+                        if(!folderName) return window.showWarningMessage("Paste cancelled.");
 
                         const saveDir = workspace.getWorkspaceFolder(editor.document.uri);
-                        if(!saveDir) return window.showWarningMessage('Paste error.');
+                        if(!saveDir) return window.showWarningMessage("Paste error.");
 
                         vscodeClipboard(saveDir.uri.path, folderName, clipboard, clipboardList.label);
                     }else{
-                        return window.showWarningMessage('Paste error.');
+                        return window.showWarningMessage("Paste cancelled, clipboard is empty.");
                     }
                 }else{
-                    return window.showWarningMessage('Paste error.');
+                    return window.showWarningMessage("Paste error.");
                 }
             }else{
                 const clipboard = await getClipboardContent(config, clipboardList.label);
                 if(clipboard){
                     if(clipboard.length === 1){
                         const fileName = await window.showInputBox({ prompt: "Save As" });
-                        if(!fileName) return window.showWarningMessage(`Paste cancelled.`);
+                        if(!fileName) return window.showWarningMessage("Paste cancelled.");
                         
                         const filePath = Uri.file(path.join(dir, fileName));
-                        await workspace.fs.writeFile(filePath, Buffer.from(clipboard[0].content, 'utf-8'));
+                        await workspace.fs.writeFile(filePath, Buffer.from(clipboard[0].content, "utf-8"));
 
                         window.showInformationMessage(`Pasted ${clipboardList.label} at ${fileName}`);
                         const createdFile = await workspace.openTextDocument(filePath);
                         await window.showTextDocument(createdFile);
                     }else if(clipboard.length !== 0){
                         const folderName = await window.showInputBox({ prompt: "Save To Folder" });
-                        if(!folderName) return window.showWarningMessage(`Paste cancelled.`);
+                        if(!folderName) return window.showWarningMessage("Paste cancelled.");
 
                         vscodeClipboard(dir, folderName, clipboard, clipboardList.label);
                     }else{
-                        return window.showWarningMessage('Paste error.');
+                        return window.showWarningMessage("Paste cancelled, clipboard is empty.");
                     }
                 }else{
-                    return window.showWarningMessage('Paste error.');
+                    return window.showWarningMessage("Paste error.");
                 }
             }
         }else{
-            window.showWarningMessage('Paste cancelled.');
+            window.showWarningMessage("Paste cancelled.");
         }
     }catch{
-        window.showErrorMessage('Paste error.');
+        window.showErrorMessage("An error occured.");
     }
 }
 
@@ -97,7 +99,7 @@ async function vscodeClipboard(saveDir: string, folderName: string, clipboard: C
 
     clipboard.forEach(async (data) => {
         const filePath = Uri.joinPath(Uri.file(saveDir), folderName, data.file);
-        await workspace.fs.writeFile(filePath, Buffer.from(data.content, 'utf-8'));
+        await workspace.fs.writeFile(filePath, Buffer.from(data.content, "utf-8"));
         const createdFile = await workspace.openTextDocument(filePath);
         await window.showTextDocument(createdFile);
     });

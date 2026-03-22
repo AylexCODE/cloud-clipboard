@@ -2,6 +2,7 @@ import { commands, Uri, window, ExtensionContext } from "vscode";
 import paste from "./commands/paste";
 import copy from "./commands/copy";
 import getDirectory from "./utils/getDirectory";
+import del from "./commands/delete";
 
 export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri, uris: Uri[]) => {
@@ -19,4 +20,5 @@ export default function registerAllCommands(context: ExtensionContext) {
         }catch{window.showErrorMessage('Error selecting directory.')}
     }));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.editorPaste', () => {paste(undefined)}));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.delete', () => {del()}));
 }

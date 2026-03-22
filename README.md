@@ -16,6 +16,18 @@ Code instance and paste it instantly in another—across different machines, OSs
 - **Multi-Slot Support:** Save multiple snippets to different "slots" in the cloud.
 - **Cross-Platform:** Works wherever VS Code runs (Windows, macOS, Linux, and Web).
 
+## ⚒️ Example Usage
+
+### Copy
+![copy](https://github.com/AylexCODE/cloud-clipboard/blob/main/img/demo/copy.png)
+
+### Paste
+![copy](https://github.com/AylexCODE/cloud-clipboard/blob/main/img/demo/paste.png)
+
+### Delete
+![copy](https://github.com/AylexCODE/cloud-clipboard/blob/main/img/demo/delete.png)
+
+
 ## 🛠️ Infrastructure & Setup
 
 To keep this tool lightweight, private, free to use, and avoid overloading free-tier resources, **it is recommended to provide your own API endpoint.** 
@@ -51,7 +63,7 @@ To link your VS Code extension to your API Endpoint:
 1. Open **Settings** (`Ctrl + ,` or `Cmd + ,`).
 2. Search for **"Cloud Clipboard"**.
 3. Fill in your specific details:
-   - **API Endpoint**: `https://example.com`
+   - **API Endpoint**: `https://example.com` (make sure endpoint does not end with a slash)
    - **Connection**: `example`
   
 ### 3. Error Handling

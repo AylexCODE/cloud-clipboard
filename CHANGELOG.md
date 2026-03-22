@@ -1,3 +1,12 @@
+## 0.1.0 - 2026 March 22
+### Added
+- Delete clipboard function
+- Example usage
+### Improved
+- Error messages
+### Changed
+- Icon
+
 ## 0.0.6 - 2026 March 22
 ### Added
 - Open settings button shortcut when using commands if configured
