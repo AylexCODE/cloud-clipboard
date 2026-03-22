@@ -1,11 +1,18 @@
-export default async function saveClipboardContent(config: string, connection: string, content: string) {
-    const clipboard = await fetch(`${config}?connection=${connection}`, {
+import { WorkspaceConfiguration } from "vscode";
+import { ClipboardData } from "../types";
+
+export default async function saveClipboardContent(config: WorkspaceConfiguration, clipboard: string, content: ClipboardData[]): Promise<number | undefined> {
+    const endpoint: string = config.get<string>("endpoint")!;
+    const connection: string = config.get<string>("connection")!;
+
+    if(endpoint.trim().length === 0 || connection.trim().length === 0) return undefined;
+    const clipboardRes = await fetch(`${endpoint}?connection=${connection}&clipboard=${clipboard}`, {
         method: "POST",
         headers: {
-            "Content-Type": "text/plain"
+            "Content-Type": "application/json"
         },
-        body: content
+        body: JSON.stringify(content)
     });
 
-    return clipboard.status;
+    return clipboardRes.status;
 }

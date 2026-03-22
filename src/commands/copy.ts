@@ -2,13 +2,14 @@ import { Uri, window, workspace } from "vscode";
 import path = require("path");
 import saveClipboardContent from "../utils/saveClipboardContent";
 import getFiles from "../utils/getFiles";
+import { ClipboardData } from "../types";
 
 export default async function copy(dirs: Uri[] | undefined){
     try{
-        const config: string = workspace.getConfiguration("cloudclipboard").get<string>("configuration")!;
+        const config = workspace.getConfiguration("cloudclipboard");
     
-        if(config.trim().length === 0) {
-            window.showWarningMessage("Clipboard API Endpoint is not set. Please configure it in the extension settings.");
+        if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("connection")!.trim().length === 0) {
+            window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
             return;
         }
     
@@ -20,17 +21,17 @@ export default async function copy(dirs: Uri[] | undefined){
 
         if(dirs === undefined) if(content.trim().length === 0) return window.showWarningMessage('Please highlight content to save.');
         
-        const connection = await window.showInputBox({ prompt: "Save As" });
-        if(connection){
+        const clipboard = await window.showInputBox({ prompt: "Copy As" });
+        if(clipboard){
             if(dirs === undefined){
-                const saved = await saveClipboardContent(config, connection, content);
+                const saved = await saveClipboardContent(config, clipboard, [{file: "", content: content}]);
                 if(saved === 200){
-                    window.showInformationMessage(`Copied ${connection} to cloud clipboard.`);
+                    window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
                 }else{
                     window.showErrorMessage('An error occured while copying to cloud clipboard.');
                 }
             }else{
-                let contents = "vscode";
+                let contents: ClipboardData[] = [];
 
                 for(const dir of dirs){
                     const files = await getFiles(dir);
@@ -38,17 +39,19 @@ export default async function copy(dirs: Uri[] | undefined){
                     for(const file of files){
                         try{
                             const fileContent = Buffer.from(await workspace.fs.readFile(file)).toString('utf-8');
-                            contents += `\n\n\/****************\n\/\/* vscode ${workspace.asRelativePath(file)}\n\/****************\n`;
-                            contents += fileContent;
+                            contents.push({
+                                file: workspace.asRelativePath(file),
+                                content: fileContent
+                            })
                         }catch{
                             window.showErrorMessage(`Failed to copy ${file}`);
                         }
                     }
                 }
 
-                const saved = await saveClipboardContent(config, connection, contents);
-                if(saved === 200){
-                    window.showInformationMessage(`Copied ${connection} to cloud clipboard.`);
+                const saveStatus = await saveClipboardContent(config, clipboard, contents);
+                if(saveStatus === 200){
+                    window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
                 }else{
                     window.showErrorMessage('An error occured while copying to cloud clipboard.');
                 }

@@ -18,7 +18,7 @@ Code instance and paste it instantly in another—across different machines, OSs
 
 ## 🛠️ Infrastructure & Setup
 
-To keep this tool lightweight, private, and free to use, **you must provide your own API endpoint.** 
+To keep this tool lightweight, private, free to use, and avoid overloading free-tier resources, **it is recommended to provide your own API endpoint.** 
 
 ### Why a Custom Endpoint?
 - **Zero Data Logging:** Since you host the backend, your clipboard data never passes through a third-party server.
@@ -27,17 +27,22 @@ To keep this tool lightweight, private, and free to use, **you must provide your
 
 ## ⚙️ Setup & API Configuration
 
-To keep this tool private and avoid overloading free-tier resources, **you must provide your own API endpoint**. The client communicates using a simple RESTful interface that handles raw text and uses a `connection` parameter to identify your specific clipboard.
-
 ### 1. API Specifications
 
-Your endpoint must support **Plain Text** (no JSON wrappers) and use a query parameter to identify the specific **data channel** you wish to access.
+The client communicates via a RESTful interface. Each request requires a connection (your private ID) and a clipboard (a specific slot or namespace).
 
+### 1.2 Data Schema
 
-| Method | Endpoint Example | Content-Type | Action |
-| :--- | :--- | :--- | :--- |
-| **GET** | `?connection=1` | `text/plain` | Returns the stored content for connection `1`. |
-| **POST** | `?connection=1` | `text/plain` | Overwrites the content for connection `1` with the request body. |
+All data exchanged (except for the /list endpoint) must be a JSON Array of Objects with the following structure:
+```javascript
+[{ "file": string, "content": string }]
+```
+
+| Method | Endpoint | Query Parameters | Content-Type | Action |
+| :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/` | `connection, clipboard` | `None` | Returns the stored array for that clipboard. |
+| **GET** | `/list` | `connection` | `None` | Returns an array of available clipboard e.g. ["s1", "s2"]. |
+| **POST** | `/` | `connection, clipboard` | `Array` | Overwrites the clipboard with the new content body. |
 
 ### 2. VS Code Extension Configuration
 
@@ -47,6 +52,14 @@ To link your VS Code extension to your API Endpoint:
 2. Search for **"Cloud Clipboard"**.
 3. Fill in your specific details:
    - **API Endpoint**: `https://example.com`
+   - **Connection**: `example`
+  
+### 3. Error Handling
+
+To ensure Cloud Clipboard handles issues gracefully, your API should return the following status codes:
+- 200 OK: Request successful.
+- 400 Bad Request: Missing connection or clipboard parameters, or invalid body format.
+- 500 Internal Server Error: Server-side failure.
 
 ## 🤝 Contributing
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create.
