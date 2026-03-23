@@ -9,12 +9,11 @@ export default async function copy(dirs: Uri[] | undefined){
         const config = workspace.getConfiguration("cloudclipboard");
     
         if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("namespace")!.trim().length === 0) {
-            window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+            return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
                     commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
                 }
             });
-            return;
         }
     
         const editor = window.activeTextEditor;
@@ -28,8 +27,16 @@ export default async function copy(dirs: Uri[] | undefined){
         const clipboard = await window.showInputBox({ prompt: "Copy As" });
         if(clipboard){
             if(dirs === undefined){
-                const saved = await saveClipboardContent(config, clipboard, [{file: "", content: content}]);
-                if(saved === 200){
+                const saveStatus = await saveClipboardContent(config, clipboard, [{file: "", content: content}]);
+                if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
+                    return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                        if (selection === "Open Settings") {
+                            commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+                        }
+                    });
+                }
+
+                if(saveStatus?.status === 200){
                     window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
                 }else{
                     window.showErrorMessage("An error occured while copying to cloud clipboard.");
@@ -54,7 +61,15 @@ export default async function copy(dirs: Uri[] | undefined){
                 }
 
                 const saveStatus = await saveClipboardContent(config, clipboard, contents);
-                if(saveStatus === 200){
+                if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
+                    return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                        if (selection === "Open Settings") {
+                            commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+                        }
+                    });
+                }
+
+                if(saveStatus?.status === 200){
                     window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
                 }else{
                     window.showErrorMessage("An error occured while copying to cloud clipboard.");

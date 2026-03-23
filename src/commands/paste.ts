@@ -2,7 +2,6 @@ import { commands, Uri, window, workspace } from "vscode";
 import path = require("path");
 
 import getClipboards from "../utils/getClipboardList";
-import getDirectory from "../utils/getDirectory";
 import getClipboardContent from "../utils/getClipboardContent";
 import { ClipboardData } from "../types";
 

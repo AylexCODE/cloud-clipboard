@@ -8,6 +8,7 @@ export default async function getClipboards(config: WorkspaceConfiguration): Pro
     
     try{
         const connections = await fetch(`${endpoint}/list?namespace=${clipboardNamespace}`);
+        if(connections.statusText == "Not Found" && connections.status == 404) return undefined;
         return await connections.json() as string[];
     }catch{
         return [];

@@ -1,3 +1,7 @@
+## 0.1.4 - 2026 March 24
+### Improve
+- Error message for malformed API Endpoint
+
 ## 0.1.3 - 2026 March 23
 ### Add
 - Option to paste file(s) directly to the selected directory
