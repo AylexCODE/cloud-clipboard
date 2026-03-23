@@ -1,38 +1,44 @@
-## 0.1.1 - 2026 March 22
-### Added
+## 0.1.3 - 2026 March 23
+### Add
+- Option to paste file(s) directly to the selected directory
+### Refactor
+- Variables for clarity
+
+## 0.1.1 - 2026 March 23
+### Add
 - Configuration - sort clipboard namespace results
-### Changed
+### Change
 - Commands contribute
 
 ## 0.1.0 - 2026 March 22
-### Added
+### Add
 - Delete clipboard function
 - Example usage
-### Improved
+### Improve
 - Error messages
-### Changed
+### Change
 - Icon
 
 ## 0.0.6 - 2026 March 22
-### Added
+### Add
 - Open settings button shortcut when using commands if configured
-### Changed
+### Change
 - Icon
 
 ## 0.0.5 - 2026 March 22
-### Improved
+### Add
+- Default Clipboard API Endpoint
+### Improve
 - Error handling, notification messages
-- Introducted default Clipboard API Endpoint
 ### Refactor
 - Request handling
 - Copy, and paste flow
-### Changed
+### Change
 - Icon
 
 ## 0.0.2 - 2026 March 21
-### Added
+### Add
 - Fix clipboard paste status not showing
 
 ## 0.0.1 - 2026 March 21
-### Added
-- Initial release
+### Initial release

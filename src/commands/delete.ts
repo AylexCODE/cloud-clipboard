@@ -1,12 +1,12 @@
 import { commands, window, workspace } from "vscode";
-import getConnections from "../utils/getConnectionLists";
+import getClipboards from "../utils/getClipboardList";
 import deleteClipboard from "../utils/deleteClipboard";
 
 export default async function del() {    
     try{
         const config = workspace.getConfiguration("cloudclipboard");
 
-        const connectionList = await getConnections(config);
+        const connectionList = await getClipboards(config);
         if(connectionList === undefined){
             window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
@@ -20,7 +20,7 @@ export default async function del() {
             return { label: conn };
         });
 
-        if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the connection ${config.get<string>("connection")!}`);
+        if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the namespace ${config.get<string>("namespace")!}`);
 
         const clipboardList = await window.showQuickPick(items, {
             canPickMany: false,

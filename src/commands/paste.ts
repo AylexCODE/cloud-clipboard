@@ -1,7 +1,7 @@
 import { commands, Uri, window, workspace } from "vscode";
 import path = require("path");
 
-import getConnections from "../utils/getConnectionLists";
+import getClipboards from "../utils/getClipboardList";
 import getDirectory from "../utils/getDirectory";
 import getClipboardContent from "../utils/getClipboardContent";
 import { ClipboardData } from "../types";
@@ -10,7 +10,7 @@ export default async function paste(dir: string | undefined) {
     try{
         const config = workspace.getConfiguration("cloudclipboard");
 
-        const connectionList = await getConnections(config);
+        const connectionList = await getClipboards(config);
         if(connectionList === undefined){
             window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
@@ -24,7 +24,7 @@ export default async function paste(dir: string | undefined) {
             return { label: conn };
         });
 
-        if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the connection ${config.get<string>("connection")!}`);
+        if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the namespace ${config.get<string>("namespace")!}`);
 
         const clipboardList = await window.showQuickPick(items, {
             canPickMany: false,
@@ -65,7 +65,7 @@ export default async function paste(dir: string | undefined) {
                 const clipboard = await getClipboardContent(config, clipboardList.label);
                 if(clipboard){
                     if(clipboard.length === 1){
-                        const fileName = await window.showInputBox({ prompt: "Save As" });
+                        const fileName = await window.showInputBox({ prompt: "Save As File" });
                         if(!fileName) return window.showWarningMessage("Paste cancelled.");
                         
                         const filePath = Uri.file(path.join(dir, fileName));
@@ -94,15 +94,15 @@ export default async function paste(dir: string | undefined) {
     }
 }
 
-async function vscodeClipboard(saveDir: string, folderName: string, clipboard: ClipboardData[], connection: string) {
-    await workspace.fs.createDirectory(Uri.file(path.join(saveDir, folderName)));
+async function vscodeClipboard(saveDir: string, folderName: string, clipboardContents: ClipboardData[], clipboard: string) {
+    if(folderName !== "-") await workspace.fs.createDirectory(Uri.file(path.join(saveDir, folderName)));
 
-    clipboard.forEach(async (data) => {
-        const filePath = Uri.joinPath(Uri.file(saveDir), folderName, data.file);
+    clipboardContents.forEach(async (data) => {
+        const filePath = folderName === "-" ? Uri.joinPath(Uri.file(saveDir), data.file) : Uri.joinPath(Uri.file(saveDir), folderName, data.file);
         await workspace.fs.writeFile(filePath, Buffer.from(data.content, "utf-8"));
         const createdFile = await workspace.openTextDocument(filePath);
         await window.showTextDocument(createdFile);
     });
 
-    window.showInformationMessage(`Pasted ${connection} at ${folderName}`);
+    window.showInformationMessage(`Pasted ${clipboard} at ${folderName !== "-" ? folderName : "the selected directory"}.`);
 }

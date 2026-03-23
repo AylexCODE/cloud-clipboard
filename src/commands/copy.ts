@@ -8,7 +8,7 @@ export default async function copy(dirs: Uri[] | undefined){
     try{
         const config = workspace.getConfiguration("cloudclipboard");
     
-        if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("connection")!.trim().length === 0) {
+        if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("namespace")!.trim().length === 0) {
             window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
                     commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
