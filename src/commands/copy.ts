@@ -1,8 +1,7 @@
 import { commands, Uri, window, workspace } from "vscode";
-import path = require("path");
+import { ClipboardData } from "../types";
 import saveClipboardContent from "../utils/saveClipboardContent";
 import getFiles from "../utils/getFiles";
-import { ClipboardData } from "../types";
 
 export default async function copy(dirs: Uri[] | undefined){
     try{
@@ -17,12 +16,9 @@ export default async function copy(dirs: Uri[] | undefined){
         }
     
         const editor = window.activeTextEditor;
-        if(!editor) return window.showErrorMessage("No active editor found.");
-        
-        const selection = editor.selection;
-        const content = editor.document.getText(selection);
+        if(!editor && dirs === undefined) return window.showErrorMessage("No active editor found.");
 
-        if(dirs === undefined) if(content.trim().length === 0) return window.showWarningMessage("Please highlight content to save.");
+        if(dirs === undefined && editor) if(editor.document.getText(editor.selection).trim().length === 0) return window.showWarningMessage("Please highlight content to save.");
         
         const clipboard = await window.showInputBox({
             prompt: "Create clipboard",
@@ -32,12 +28,16 @@ export default async function copy(dirs: Uri[] | undefined){
                 return input.trim().length <= 64 ? null : "Clipboard name cannot be greater than 64"
             }
         });
+
         if(clipboard){
             if(dirs === undefined){
+                if(!editor) return window.showErrorMessage("No active editor found.");
+                const content = editor.document.getText(editor.selection);
+
                 const saveStatus = await saveClipboardContent(config, clipboard, [{file: "", content: content}]);
                 if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
                     return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
-                        if (selection === "Open Settings") {
+                        if(selection === "Open Settings"){
                             commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
                         }
                     });

@@ -1,3 +1,7 @@
+## 0.2.3 - 2026 March 24
+### Fix
+- Cannot copy a file when no editor is active e.g. not editing a file
+
 ## 0.2.2 - 2026 March 24
 ### Add
 - Option to prevent the input box from closing when it loses focus

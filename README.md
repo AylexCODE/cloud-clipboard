@@ -23,15 +23,14 @@
    - **As Text:** Paste content directly into your active editor.
    - **As Files:** When pasting content copied from multiple files/folders, the extension automatically switches to file-paste mode.
    - **Smart Routing:** Upon pasting files, you will be prompted for a folder name.
-      - Enter a **folder name** to create a new directory for the content.
-      - Enter `-` to paste directly into your root directory or the currently selected folder in the explorer.
+      - Enter a **path** to create a new directory for the content.
 - **Clipboard Management:** Easily delete saved clipboards to keep your cloud storage clean. (Warning: Deletions are permanent and cannot be undone). 
 
 ## Usage
 1. **Copy:** Right-click a selection, file, or folder in the Explorer and select **Cloud Clipboard: Copy**.
 2. **Paste:**
    - **As Text:** Right-click inside an open file and select **Cloud Clipboard: Paste**.
-   - **As Files:** Right-click a folder or empty space in the Explorer and select Cloud Clipboard: Paste. Follow the prompt to specify a directory name (or enter - to paste into the current path).
+   - **As Files:** Right-click a folder or empty space in the Explorer and select **Cloud Clipboard: Paste.** Follow the prompt to specify a directory name.
 3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items. 
 
 <details close>
