@@ -126,10 +126,15 @@ async function vscodeClipboard(saveDir: string, folderName: string, clipboardCon
         try{
             await workspace.fs.stat(filePath);
 
-            const overwrite = await window.showWarningMessage(`A file named "${filePath.path.split('/').pop()}" already exists. Do you want to overwrite it?`, { modal: true }, "Yes", "No");
-            if(overwrite === "Yes" || forcePaste){
+            if(forcePaste){
                 save(filePath, data);
                 isSaved = true;
+            }else{
+                const overwrite = await window.showWarningMessage(`A file named "${filePath.path.split('/').pop()}" already exists. Do you want to overwrite it?`, { modal: true }, "Yes", "No");
+                if(overwrite === "Yes"){
+                    save(filePath, data);
+                    isSaved = true;
+                }
             }
         }catch{
             save(filePath, data);

@@ -1,3 +1,7 @@
+## 0.2.4 - 2026 March 24
+### Fix
+- Force Paste i.e. the always replace option for existing items isn't working
+
 ## 0.2.3 - 2026 March 24
 ### Fix
 - Cannot copy a file when no editor is active e.g. not editing a file
