@@ -24,7 +24,14 @@ export default async function copy(dirs: Uri[] | undefined){
 
         if(dirs === undefined) if(content.trim().length === 0) return window.showWarningMessage("Please highlight content to save.");
         
-        const clipboard = await window.showInputBox({ prompt: "Copy As" });
+        const clipboard = await window.showInputBox({
+            prompt: "Create clipboard",
+            title: "Copy As",
+            ignoreFocusOut: config.get<boolean>("persistInputBox", true),
+            validateInput: input => {
+                return input.trim().length <= 64 ? null : "Clipboard name cannot be greater than 64"
+            }
+        });
         if(clipboard){
             if(dirs === undefined){
                 const saveStatus = await saveClipboardContent(config, clipboard, [{file: "", content: content}]);

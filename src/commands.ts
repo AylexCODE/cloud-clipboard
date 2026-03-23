@@ -7,7 +7,7 @@ import del from "./commands/delete";
 export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri, uris: Uri[]) => {
         try{
-            if(!uris || uris.length === 0) return window.showWarningMessage('Please select one or more files or directories.');
+            if(!uris || uris.length === 0) return window.showWarningMessage('Please select one or more files or directories, and right click on one of them.');
             copy(uris);
         }catch{window.showErrorMessage('Error selecting directory.')}
     }));

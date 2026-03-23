@@ -1,3 +1,13 @@
+## 0.2.2 - 2026 March 24
+### Add
+- Option to prevent the input box from closing when it loses focus
+- Option to show Confirmation Before Deleting A Clipboard
+- Copy Clipboard validation, clipboard name length cannot be greater than 64
+### Improve
+- Message for no file selected to copy in explorer
+- Paste file creation e.g. save path, and its corresponding message status
+- Input box clarity e.g. input title, and prompt message
+
 ## 0.1.6 - 2026 March 24
 ### Add
 - Overwrite confirmation for paste if file exists

@@ -8,12 +8,11 @@ export default async function del() {
 
         const connectionList = await getClipboards(config);
         if(connectionList === undefined){
-            window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+            return window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
                     commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
                 }
             });
-            return;
         }
 
         const items = connectionList.map((conn) => {
@@ -24,15 +23,20 @@ export default async function del() {
 
         const clipboardList = await window.showQuickPick(items, {
             canPickMany: false,
-            title: "Select Clipboard"
+            title: "Select Clipboard Identifier"
         });
 
         if(clipboardList?.label){
-            const clipboard = await deleteClipboard(config, clipboardList.label);
-            if(clipboard === 200) return window.showInformationMessage(`Deleted ${clipboardList.label} successfully`);
+            const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete ${clipboardList.label}?`, { modal: true }, "Yes", "No");
+
+            if(confirmDelete === "No" || confirmDelete === undefined) return window.showInformationMessage("Delete cancelled.");
+            if(confirmDelete === "Yes" || config.get<boolean>("confirmDelete", true) === false){
+                const clipboard = await deleteClipboard(config, clipboardList.label);
+                if(clipboard === 200) return window.showInformationMessage(`Deleted ${clipboardList.label} successfully`);
+            }
             window.showWarningMessage("Delete error.");
         }else{
-            window.showWarningMessage("Delete cancelled.");
+            window.showInformationMessage("Delete cancelled.");
         }
     }catch{
         window.showErrorMessage("An error occured.");

@@ -1,14 +1,16 @@
-# Cloud Clipboard for VS Code
+<h1 align=center> <img width=72 align=center src="https://raw.githubusercontent.com/AylexCODE/cloud-clipboard/main/img/icon.png" alt="Cloud Clipboard Logo" /> Cloud Clipboard </h1><br />
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![VS Code](https://img.shields.io/badge/VS%20Code-1.100.0+-blue.svg)](https://code.visualstudio.com/)
-[![Installs](https://img.shields.io/visual-studio-marketplace/i/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard)
-<!-- [![Rating](https://img.shields.io/visual-studio-marketplace/r/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard) -->
-<!-- [![Version](https://img.shields.io/visual-studio-marketplace/v/AylexCODE.cloud-clipboard)](https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard) -->
+<div align=center>
+   <a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" /></a>
+   <a href="https://code.visualstudio.com/"><img src="https://img.shields.io/badge/VS%20Code-1.100.0+-blue.svg" /></a>
+   <a href="https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard"><img src="https://img.shields.io/visual-studio-marketplace/i/AylexCODE.cloud-clipboard" /></a>
+   <!-- <a href="https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard"><img src="https://img.shields.io/visual-studio-marketplace/r/AylexCODE.cloud-clipboard" /></a> -->
+   <!-- <a href="https://marketplace.visualstudio.com/items?itemName=AylexCODE.cloud-clipboard"><img src="[https://img.shields.io/badge/VS%20Code-1.100.0+-blue.svg](https://img.shields.io/visual-studio-marketplace/v/AylexCODE.cloud-clipboard" /></a> -->
+</div>
 
-**Cloud Clipboard** is a lightweight tool that lets you copy code in one VS Code instance and paste it instantly in another, across any environment where VS Code runs. Move code snippets, full files, or entire directory structures.
+<p align=center><i><strong>Cloud Clipboard</strong> is a lightweight tool that lets you copy code in one VS Code instance and paste it instantly in another, across any environment where VS Code runs. Move code snippets, full files, or entire directory structures.</i></p>
 
-## ✨ Features
+## Features
 
 - **Instant Sync:** Copy on one instance and paste instantly to another.
 - **Multi-Slot Support:** Save multiple snippets to different "slots" in the cloud for better organization.
@@ -25,15 +27,16 @@
       - Enter `-` to paste directly into your root directory or the currently selected folder in the explorer.
 - **Clipboard Management:** Easily delete saved clipboards to keep your cloud storage clean. (Warning: Deletions are permanent and cannot be undone). 
 
-## 🛠 Usage
+## Usage
 1. **Copy:** Right-click a selection, file, or folder in the Explorer and select **Cloud Clipboard: Copy**.
 2. **Paste:**
    - **As Text:** Right-click inside an open file and select **Cloud Clipboard: Paste**.
    - **As Files:** Right-click a folder or empty space in the Explorer and select Cloud Clipboard: Paste. Follow the prompt to specify a directory name (or enter - to paste into the current path).
 3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items. 
 
-### Example Usage
-
+<details close>
+<summary>Example Usage</summary>
+   
 ### Copy
 ![copy](https://raw.githubusercontent.com/AylexCODE/cloud-clipboard/main/img/demo/copy.png)
 
@@ -43,7 +46,9 @@
 ### Delete
 ![copy](https://raw.githubusercontent.com/AylexCODE/cloud-clipboard/main/img/demo/delete.png)
 
-## 🛠️ Infrastructure & Setup
+</details>
+
+## Infrastructure & Setup
 
 To keep this tool lightweight, private, free to use, and avoid overloading free-tier resources, **you are encouraged to provide your own API endpoint.** 
 
@@ -52,7 +57,7 @@ To keep this tool lightweight, private, free to use, and avoid overloading free-
 - **Resource Management:** By setting up your own endpoint (e.g., on a free tier like Render, Railway, or a home Raspberry Pi), you avoid shared rate limits and service "cold starts."
 - **Full Control:** You decide how long your clipboard history is stored and who has access.
 
-## ⚙️ Setup & API Configuration
+## Setup & API Configuration
 
 ### 1. API Specifications
 
@@ -88,12 +93,12 @@ To ensure Cloud Clipboard handles issues gracefully, your API should return the 
 - 400 Bad Request: Missing connection or clipboard parameters, or invalid body format.
 - 500 Internal Server Error: Server-side failure.
 
-## 🤝 Contributing
+## Contributing
 
 Contributions are what make the open-source community such an amazing place to learn, inspire, and create.
 
 Any contributions are greatly appreciated.
 
-## 📄 License
+## License
 
-Distributed under the MIT License.
+<p>Distributed under the <a href="https://github.com/AylexCODE/cloud-clipboard/blob/main/LICENSE">MIT License.</a></p>

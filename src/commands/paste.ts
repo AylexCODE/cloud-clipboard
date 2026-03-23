@@ -11,13 +11,13 @@ export default async function paste(dir: string | undefined) {
 
         const connectionList = await getClipboards(config);
         if(connectionList === undefined){
-            window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+            return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                 if (selection === "Open Settings") {
                     commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
                 }
             });
-            return;
         }
+        const persistInputBox = config.get<boolean>("persistInputBox", true);
 
         const items = connectionList.map((conn) => {
             return { label: conn };
@@ -47,13 +47,23 @@ export default async function paste(dir: string | undefined) {
                         
                         window.showInformationMessage(`Pasted ${clipboardList.label} at line ${selection.active.line + 1}`);
                     }else if(clipboard.length !== 0){
-                        const folderName = await window.showInputBox({ prompt: "Save To Folder" });
-                        if(!folderName) return window.showWarningMessage("Paste cancelled.");
+                        const getDefault = workspace.asRelativePath(editor.document.uri).split("/"); getDefault.pop();
+                        const defaultPath = `${getDefault.join("/")}/`;
+
+                        const folderName = await window.showInputBox({
+                            prompt: "Enter save path",
+                            title: "Save To Folder",
+                            value: defaultPath,
+                            valueSelection: [defaultPath.length, defaultPath.length],
+                            ignoreFocusOut: persistInputBox
+                        });
+
+                        if(folderName === undefined) return window.showWarningMessage("Paste cancelled.");
 
                         const saveDir = workspace.getWorkspaceFolder(editor.document.uri);
                         if(!saveDir) return window.showWarningMessage("Paste error.");
 
-                        vscodeClipboard(saveDir.uri.path, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste")!);
+                        vscodeClipboard(saveDir.uri.path, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste", false));
                     }else{
                         return window.showWarningMessage("Paste cancelled, clipboard is empty.");
                     }
@@ -64,7 +74,14 @@ export default async function paste(dir: string | undefined) {
                 const clipboard = await getClipboardContent(config, clipboardList.label);
                 if(clipboard){
                     if(clipboard.length === 1){
-                        const fileName = await window.showInputBox({ prompt: "Save As File" });
+                        const fileName = await window.showInputBox({
+                            prompt: "Create file name",
+                            title: "Save As File",
+                            ignoreFocusOut: persistInputBox,
+                            validateInput: input => {
+                                return input.trim().length == 0 ? "File name cannot be empty" : null
+                            }
+                        });
                         if(!fileName) return window.showWarningMessage("Paste cancelled.");
                         
                         const filePath = Uri.file(path.join(dir, fileName));
@@ -74,8 +91,13 @@ export default async function paste(dir: string | undefined) {
                         const createdFile = await workspace.openTextDocument(filePath);
                         await window.showTextDocument(createdFile);
                     }else if(clipboard.length !== 0){
-                        const folderName = await window.showInputBox({ prompt: "Save To Folder" });
-                        if(!folderName) return window.showWarningMessage("Paste cancelled.");
+                        const folderName = await window.showInputBox({
+                            prompt: "Enter save path",
+                            title: "Save To Folder",
+                            ignoreFocusOut: persistInputBox
+                        });
+
+                        if(folderName === undefined) return window.showWarningMessage("Paste cancelled.");
 
                         vscodeClipboard(dir, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste")!);
                     }else{
@@ -94,11 +116,12 @@ export default async function paste(dir: string | undefined) {
 }
 
 async function vscodeClipboard(saveDir: string, folderName: string, clipboardContents: ClipboardData[], clipboard: string, forcePaste: boolean) {
-    if(folderName !== "-") await workspace.fs.createDirectory(Uri.file(path.join(saveDir, folderName)));
+    const savePath = Uri.joinPath(Uri.file(saveDir), folderName);
+    await workspace.fs.createDirectory(savePath);
 
     let isSaved = false;
     await Promise.all(clipboardContents.map(async (data) => {
-        const filePath = folderName === "-" ? Uri.joinPath(Uri.file(saveDir), data.file) : Uri.joinPath(Uri.file(saveDir), folderName, data.file);
+        const filePath = Uri.joinPath(Uri.file(saveDir), folderName, data.file);
 
         try{
             await workspace.fs.stat(filePath);
@@ -110,10 +133,11 @@ async function vscodeClipboard(saveDir: string, folderName: string, clipboardCon
             }
         }catch{
             save(filePath, data);
+            isSaved = true;
         }
     }));
-    
-    isSaved ? window.showInformationMessage(`Pasted ${clipboard} at ${folderName !== "-" ? folderName : "the selected directory"}.`) : window.showWarningMessage("Paste cancelled.");
+
+    isSaved ? window.showInformationMessage(`Pasted ${clipboard} at ${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath)}.`) : window.showWarningMessage("Paste cancelled.");
 }
 
 async function save(filePath: Uri, data: {content: string}){
