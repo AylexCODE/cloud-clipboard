@@ -1,3 +1,9 @@
+## 0.1.1 - 2026 March 22
+### Added
+- Configuration - sort clipboard namespace results
+### Changed
+- Commands contribute
+
 ## 0.1.0 - 2026 March 22
 ### Added
 - Delete clipboard function

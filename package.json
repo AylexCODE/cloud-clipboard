@@ -2,7 +2,7 @@
 	"name": "cloud-clipboard",
 	"displayName": "Cloud Clipboard",
 	"description": "Copy and paste text anywhere.",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"publisher": "AylexCODE",
 	"license": "MIT",
 	"icon": "img/icon.png",
@@ -24,38 +24,54 @@
 		"configuration": {
 			"title": "Cloud Clipboard",
 			"properties": {
+				"cloudclipboard.namespace": {
+					"type": "string",
+					"default": "",
+					"description": "Clipboard Namespace"
+				},
+				"cloudclipboard.sortResults": {
+					"type": "string",
+					"enum": ["ascending", "descending", "date_ascending", "date_descending"],
+					"default": "ascending",
+					"description": "Sort Clipboard Namespace Results"
+				},
 				"cloudclipboard.endpoint": {
 					"type": "string",
 					"default": "https://cloud-clipboard-api.onrender.com",
 					"description": "Clipboard API Endpoint"
-				},
-				"cloudclipboard.connection": {
-					"type": "string",
-					"default": "",
-					"description": "Connection"
 				}
 			}
 		},
 		"commands": [
 			{
 				"command": "cloudclipboard.copy",
-				"title": "Cloud Clipboard Copy"
+				"title": "Copy"
 			},
 			{
 				"command": "cloudclipboard.paste",
-				"title": "Cloud Clipboard Paste"
+				"title": "Paste"
 			},
 			{
 				"command": "cloudclipboard.delete",
-				"title": "Cloud Clipboard Delete"
+				"title": "Delete"
 			},
 			{
 				"command": "cloudclipboard.editorCopy",
-				"title": "Cloud Clipboard Copy"
+				"title": "Copy"
 			},
 			{
 				"command": "cloudclipboard.editorPaste",
-				"title": "Cloud Clipboard Paste"
+				"title": "Paste"
+			}
+		],
+		"submenus": [
+			{
+				"id": "cloudClipboard",
+				"label": "Cloud Clipboard"
+			},
+			{
+				"id": "cloudClipboardEditor",
+				"label": "Cloud Clipboard"
 			}
 		],
 		"menus": {
@@ -69,6 +85,10 @@
 					"when": "false"
 				},
 				{
+					"command": "cloudclipboard.delete",
+					"when": "false"
+				},
+				{
 					"command": "cloudclipboard.editorCopy",
 					"when": "false"
 				},
@@ -79,26 +99,44 @@
 			],
 			"explorer/context": [
 				{
-					"command": "cloudclipboard.copy",
-					"group": "navigation",
+					"submenu": "cloudClipboard",
+					"group": "cloud_clipboard",
 					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
+				}
+			],
+			"cloudClipboard": [
+				{
+					"command": "cloudclipboard.copy",
+					"group": "cloud_clipboard"
 				},
 				{
 					"command": "cloudclipboard.paste",
-					"group": "navigation",
-					"when": "explorerResourceIsFolder || !explorerResourceIsFolder"
+					"group": "cloud_clipboard"
+				},
+				{
+					"command": "cloudclipboard.delete",
+					"group": "cloud_clipboard"
 				}
 			],
 			"editor/context": [
 				{
-					"command": "cloudclipboard.editorCopy",
-					"group": "navigation",
+					"submenu": "cloudClipboardEditor",
+					"group": "cloud_clipboard",
 					"when": "editorTextFocus"
+				}
+			],
+			"cloudClipboardEditor": [
+				{
+					"command": "cloudclipboard.editorCopy",
+					"group": "cloud_clipboard"
 				},
 				{
 					"command": "cloudclipboard.editorPaste",
-					"group": "navigation",
-					"when": "editorTextFocus"
+					"group": "cloud_clipboard"
+				},
+				{
+					"command": "cloudclipboard.delete",
+					"group": "cloud_clipboard"
 				}
 			]
 		}
