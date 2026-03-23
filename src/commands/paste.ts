@@ -53,7 +53,7 @@ export default async function paste(dir: string | undefined) {
                         const saveDir = workspace.getWorkspaceFolder(editor.document.uri);
                         if(!saveDir) return window.showWarningMessage("Paste error.");
 
-                        vscodeClipboard(saveDir.uri.path, folderName, clipboard, clipboardList.label);
+                        vscodeClipboard(saveDir.uri.path, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste")!);
                     }else{
                         return window.showWarningMessage("Paste cancelled, clipboard is empty.");
                     }
@@ -77,7 +77,7 @@ export default async function paste(dir: string | undefined) {
                         const folderName = await window.showInputBox({ prompt: "Save To Folder" });
                         if(!folderName) return window.showWarningMessage("Paste cancelled.");
 
-                        vscodeClipboard(dir, folderName, clipboard, clipboardList.label);
+                        vscodeClipboard(dir, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste")!);
                     }else{
                         return window.showWarningMessage("Paste cancelled, clipboard is empty.");
                     }
@@ -93,15 +93,31 @@ export default async function paste(dir: string | undefined) {
     }
 }
 
-async function vscodeClipboard(saveDir: string, folderName: string, clipboardContents: ClipboardData[], clipboard: string) {
+async function vscodeClipboard(saveDir: string, folderName: string, clipboardContents: ClipboardData[], clipboard: string, forcePaste: boolean) {
     if(folderName !== "-") await workspace.fs.createDirectory(Uri.file(path.join(saveDir, folderName)));
 
-    clipboardContents.forEach(async (data) => {
+    let isSaved = false;
+    await Promise.all(clipboardContents.map(async (data) => {
         const filePath = folderName === "-" ? Uri.joinPath(Uri.file(saveDir), data.file) : Uri.joinPath(Uri.file(saveDir), folderName, data.file);
-        await workspace.fs.writeFile(filePath, Buffer.from(data.content, "utf-8"));
-        const createdFile = await workspace.openTextDocument(filePath);
-        await window.showTextDocument(createdFile);
-    });
 
-    window.showInformationMessage(`Pasted ${clipboard} at ${folderName !== "-" ? folderName : "the selected directory"}.`);
+        try{
+            await workspace.fs.stat(filePath);
+
+            const overwrite = await window.showWarningMessage(`A file named "${filePath.path.split('/').pop()}" already exists. Do you want to overwrite it?`, { modal: true }, "Yes", "No");
+            if(overwrite === "Yes" || forcePaste){
+                save(filePath, data);
+                isSaved = true;
+            }
+        }catch{
+            save(filePath, data);
+        }
+    }));
+    
+    isSaved ? window.showInformationMessage(`Pasted ${clipboard} at ${folderName !== "-" ? folderName : "the selected directory"}.`) : window.showWarningMessage("Paste cancelled.");
+}
+
+async function save(filePath: Uri, data: {content: string}){
+    await workspace.fs.writeFile(filePath, Buffer.from(data.content, "utf-8"));
+    const createdFile = await workspace.openTextDocument(filePath);
+    await window.showTextDocument(createdFile);
 }

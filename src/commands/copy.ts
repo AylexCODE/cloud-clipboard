@@ -55,7 +55,7 @@ export default async function copy(dirs: Uri[] | undefined){
                                 content: fileContent
                             })
                         }catch{
-                            window.showErrorMessage(`Failed to copy ${file}`);
+                            window.showErrorMessage(`Failed to copy ${file}.`);
                         }
                     }
                 }

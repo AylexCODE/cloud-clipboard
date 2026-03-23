@@ -2,7 +2,7 @@
 	"name": "cloud-clipboard",
 	"displayName": "Cloud Clipboard",
 	"description": "Copy and paste text, files, or folders across any VS Code instance.",
-	"version": "0.1.4",
+	"version": "0.1.6",
 	"publisher": "AylexCODE",
 	"license": "MIT",
 	"icon": "img/icon.png",
@@ -27,18 +27,23 @@
 				"cloudclipboard.namespace": {
 					"type": "string",
 					"default": "",
-					"description": "Clipboard Namespace"
+					"description": "Clipboard Namespace."
 				},
 				"cloudclipboard.sortResults": {
 					"type": "string",
 					"enum": ["ascending", "descending", "date_ascending", "date_descending"],
 					"default": "ascending",
-					"description": "Sort Clipboard Namespace Results"
+					"description": "Sort Clipboard Namespace Results."
+				},
+				"cloudclipboard.forcePaste": {
+					"type": "boolean",
+					"default": false,
+					"description": "Always Replace Existing Items."
 				},
 				"cloudclipboard.endpoint": {
 					"type": "string",
 					"default": "https://cloud-clipboard-api.onrender.com",
-					"description": "Clipboard API Endpoint"
+					"description": "Clipboard API Endpoint."
 				}
 			}
 		},

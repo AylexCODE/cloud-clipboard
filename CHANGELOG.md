@@ -1,3 +1,8 @@
+## 0.1.6 - 2026 March 24
+### Add
+- Overwrite confirmation for paste if file exists
+- Sort clipboard results
+
 ## 0.1.4 - 2026 March 24
 ### Improve
 - Error message for malformed API Endpoint
@@ -10,7 +15,7 @@
 
 ## 0.1.1 - 2026 March 23
 ### Add
-- Configuration - sort clipboard namespace results
+- Configuration - sort clipboard results
 ### Change
 - Commands contribute
 
