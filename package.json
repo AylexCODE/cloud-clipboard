@@ -2,7 +2,7 @@
 	"name": "cloud-clipboard",
 	"displayName": "Cloud Clipboard",
 	"description": "Copy and paste text, files, or folders across any VS Code instance.",
-	"version": "0.2.9",
+	"version": "0.3.0",
 	"publisher": "AylexCODE",
 	"license": "MIT",
 	"icon": "img/icon.png",

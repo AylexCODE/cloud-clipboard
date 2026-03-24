@@ -1,3 +1,7 @@
+## 0.3.0 - 2026 March 24
+### Change
+- Clipboard data retrieval path changed to /content
+
 ## 0.2.9 - 2026 March 24
 ### Add
 - Validation and error message for exceeding the total file size limit
