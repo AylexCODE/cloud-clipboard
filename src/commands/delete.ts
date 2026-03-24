@@ -28,12 +28,12 @@ export default async function del() {
         });
 
         if(clipboardList && clipboardList?.length > 0){
-            const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete${clipboardList.map(l => ' '+l.label)}?`, { modal: true }, "Yes", "No");
+            const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete${clipboardList.length > 1 ? ` these ${clipboardList.length} items:\n` : ':\n'}${clipboardList.map(l => ' '+l.label)}?`, { modal: true }, "Yes", "No");
 
             if(confirmDelete === "No" || confirmDelete === undefined) return window.showInformationMessage("Delete cancelled.");
             if(confirmDelete === "Yes" || config.get<boolean>("confirmDelete", true) === false){
                 const clipboard = await deleteClipboard(config, clipboardList.map(l => l.label));
-                if(clipboard === 200) return window.showInformationMessage(`Deleted${clipboardList.map(l => ' '+l.label)} successfully`);
+                if(clipboard === 200) return window.showInformationMessage(`Deleted${clipboardList.map(l => ' '+l.label)} successfully.`);
             }
             window.showWarningMessage("Delete error.");
         }else{

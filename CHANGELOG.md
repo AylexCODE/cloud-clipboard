@@ -1,3 +1,9 @@
+## 0.3.6 - 2026 March 25
+### Fix
+- Issue where files were saved to the incorrect directory due to a pathing error
+### Improve
+- Mssaging for the delete command to provide clearer confirmation
+
 ## 0.3.0 - 2026 March 24
 ### Change
 - Clipboard data retrieval path changed to /content

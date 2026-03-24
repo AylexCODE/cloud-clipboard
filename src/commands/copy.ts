@@ -2,6 +2,7 @@ import { commands, Uri, window, workspace } from "vscode";
 import { ClipboardData } from "../types";
 import saveClipboardContent from "../utils/saveClipboardContent";
 import getFiles from "../utils/getFiles";
+import path = require("path");
 
 export default async function copy(dirs: Uri[] | undefined){
     try{
@@ -47,7 +48,23 @@ export default async function copy(dirs: Uri[] | undefined){
 
                 copyStatus(saveStatus?.status, totalBytes, clipboard);
             }else{
-                let contents: ClipboardData[] = [], totalBytes: number = 0;
+                const contents: ClipboardData[] = [];
+                let totalBytes: number = 0;
+
+                const splitPaths = dirs.map(p => workspace.asRelativePath(p.path).split('/'));
+                const minLength = Math.min(...splitPaths.map(p => p.length));
+                let commonCount = 0;
+
+                for(let i = 0; i < minLength - 1; i++){ // minLength - 1 ensures we don't accidentally remove the filename
+                    const segment = splitPaths[0][i];
+                    const isCommon = splitPaths.every(p => p[i] === segment);
+
+                    if (isCommon) {
+                        commonCount++;
+                    } else {
+                        break;
+                    }
+                }
 
                 for(const dir of dirs){
                     const files = await getFiles(dir);
@@ -58,11 +75,11 @@ export default async function copy(dirs: Uri[] | undefined){
                         try{
                             const fileContent = Buffer.from(await workspace.fs.readFile(file)).toString('utf-8');
                             contents.push({
-                                path: workspace.asRelativePath(file),
+                                path: workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/'),
                                 content: fileContent
                             })
                         }catch{
-                            window.showErrorMessage(`Failed to copy ${file}.`);
+                            return window.showErrorMessage(`Failed to copy ${workspace.asRelativePath(file)}.`);
                         }
                     }
                 }
