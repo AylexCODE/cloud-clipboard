@@ -16,7 +16,7 @@ export default async function deleteClipboard(config: WorkspaceConfiguration, cl
         });
         return deleteStatus.status;
     }catch{
-        window.showErrorMessage("An error occured. Error ID: DELETE_CLIPBOARD");
+        window.showErrorMessage("An error occurred. Error ID: DELETE_CLIPBOARD");
         return 400;
     }
 }

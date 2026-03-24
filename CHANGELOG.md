@@ -1,78 +1,85 @@
+## 0.2.9 - 2026 March 24
+### Add
+- Validation and error message for exceeding the total file size limit
+### Fix
+- Spelling for error handling with unique Error IDs for copy/paste failures
+
 ## 0.2.7 - 2026 March 24
+### Add
+- Error handling with unique Error IDs for copy/paste failures
 ### Change
 - ClipboardData Types key from "file" to "path"
 ### Improve
-- Delete command - can delete multiple clipboard at once
-- Error messages
+- Delete command to support bulk deletion of multiple clipboard items at once
 
-## 0.2.4 - 2026 March 24
+## 0.2.4 - 2026 March 23
 ### Fix
-- Force Paste i.e. the always replace option for existing items isn't working
+- Force Paste "Always Replace" option is not working
 
-## 0.2.3 - 2026 March 24
+## 0.2.3 - 2026 March 23
 ### Fix
-- Cannot copy a file when no editor is active e.g. not editing a file
+- Issue where copying a file failed when no editor was active.
 
-## 0.2.2 - 2026 March 24
+## 0.2.2 - 2026 March 23
 ### Add
 - Option to prevent the input box from closing when it loses focus
-- Option to show Confirmation Before Deleting A Clipboard
-- Copy Clipboard validation, clipboard name length cannot be greater than 64
+- Optional confirmation dialog before deleting a clipboard item
+- Validation for clipboard names (<= 64 characters)
 ### Improve
-- Message for no file selected to copy in explorer
-- Paste file creation e.g. save path, and its corresponding message status
-- Input box clarity e.g. input title, and prompt message
+- Clarity of the "no file selected" message in the explorer
+- File creation logic and status messaging during paste operations
+- Input box UX to include more descriptive titles and prompts
 
-## 0.1.6 - 2026 March 24
+## 0.1.6 - 2026 March 23
 ### Add
-- Overwrite confirmation for paste if file exists
-- Sort clipboard results
+- Overwrite confirmation prompt if a file already exists during paste
+- Support for sorting clipboard results
 
-## 0.1.4 - 2026 March 24
+## 0.1.4 - 2026 March 23
 ### Improve
 - Error message for malformed API Endpoint
 
 ## 0.1.3 - 2026 March 23
 ### Add
-- Option to paste file(s) directly to the selected directory
+- Option to paste files directly into a selected directory
 ### Refactor
-- Variables for clarity
+- Variables for better code clarity.
 
 ## 0.1.1 - 2026 March 23
 ### Add
-- Configuration - sort clipboard results
+- Configuration setting for sorting clipboard results
 ### Change
-- Commands contribute
+- Command contributions.
 
 ## 0.1.0 - 2026 March 22
 ### Add
-- Delete clipboard function
-- Example usage
+- Delete clipboard functionality
+- Documentation for example usage
 ### Change
 - Icon
 ### Improve
-- Error messages
+- Error message descriptions
 
 ## 0.0.6 - 2026 March 22
 ### Add
-- Open settings button shortcut when using commands if configured
+- Shortcut button to open settings directly from command notifications (if not configured)
 ### Change
 - Icon
 
 ## 0.0.5 - 2026 March 22
 ### Add
-- Default Clipboard API Endpoint
+- Default Clipboard API endpoint configuration
 ### Change
 - Icon
 ### Improve
-- Error handling, notification messages
+- Error handling and notification messages
 ### Refactor
-- Request handling
-- Copy, and paste flow
+- API request handling logic
+- Core copy and paste workflow
 
 ## 0.0.2 - 2026 March 21
 ### Add
-- Fix clipboard paste status not showing
+- Issue where the clipboard paste status was not displaying correctly
 
 ## 0.0.1 - 2026 March 21
 ### Initial release

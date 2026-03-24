@@ -18,7 +18,7 @@ export default async function saveClipboardContent(config: WorkspaceConfiguratio
 
         return {status: clipboardRes.status, text: clipboardRes.statusText};
     }catch{
-        window.showErrorMessage("An error occured. Error ID: SAVE_CLIPBOARD");
+        window.showErrorMessage("An error occurred. Error ID: SAVE_CLIPBOARD");
         return {status: 400, text: "Unknown"};
     }
 }

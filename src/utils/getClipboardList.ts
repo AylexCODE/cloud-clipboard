@@ -11,7 +11,7 @@ export default async function getClipboards(config: WorkspaceConfiguration): Pro
         if(connections.statusText == "Not Found" && connections.status == 404) return undefined;
         return await connections.json() as string[];
     }catch{
-        window.showErrorMessage("An error occured. Error ID: GET_CLIPBOARDS");
+        window.showErrorMessage("An error occurred. Error ID: GET_CLIPBOARDS");
         return [];
     }
 }

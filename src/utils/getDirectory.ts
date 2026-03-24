@@ -10,7 +10,7 @@ export default async function getDirectory(uri?: Uri): Promise <string | undefin
 
         return undefined;
     }catch{
-        window.showErrorMessage("An error occured. Error ID: GET_DIRECTORY");
+        window.showErrorMessage("An error occurred. Error ID: GET_DIRECTORY");
         return undefined;
     }
 }

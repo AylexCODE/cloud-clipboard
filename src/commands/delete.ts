@@ -40,6 +40,6 @@ export default async function del() {
             window.showInformationMessage("Delete cancelled.");
         }
     }catch{
-        window.showErrorMessage("An error occured. Error ID: DELETE");
+        window.showErrorMessage("An error occurred. Error ID: DELETE");
     }
 }

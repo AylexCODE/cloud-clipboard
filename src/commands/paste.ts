@@ -112,7 +112,7 @@ export default async function paste(dir: string | undefined) {
             window.showWarningMessage("Paste cancelled.");
         }
     }catch{
-        window.showErrorMessage("An error occured. Error ID: PASTE");
+        window.showErrorMessage("An error occurred. Error ID: PASTE");
     }
 }
 
