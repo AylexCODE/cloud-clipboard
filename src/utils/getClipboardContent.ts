@@ -1,4 +1,4 @@
-import { WorkspaceConfiguration } from "vscode";
+import { window, WorkspaceConfiguration } from "vscode";
 import { ClipboardData } from "../types";
 
 export default async function getClipboardContent(config: WorkspaceConfiguration, clipboard: string): Promise<ClipboardData[] | undefined> {
@@ -11,6 +11,7 @@ export default async function getClipboardContent(config: WorkspaceConfiguration
         const data = await fetch(`${endpoint}?namespace=${clipboardNamespace}&clipboard=${clipboard}`);
         return await data.json() as ClipboardData[];
     }catch{
+        window.showErrorMessage("An error occured. Error ID: GET_CONTENT");
         return [];
     }
 }

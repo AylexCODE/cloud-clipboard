@@ -25,7 +25,6 @@
    - **Smart Routing:** Upon pasting files, you will be prompted for a folder name.
       - Enter a **path** to create a new directory for the content.
 - **Clipboard Management:** Delete saved clipboards to keep your cloud storage clean.
-> **Warning:** Deletions are permanent and cannot be undone. 
 
 ## Usage
 1. **Copy:** Right-click a selection, file, or folder in the Explorer and select **Cloud Clipboard: Copy**.
@@ -34,7 +33,10 @@
    - **As Files:** Right-click a folder or empty space in the Explorer and select **Cloud Clipboard: Paste.** Follow the prompt to specify a directory name.
 3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items.
 
-> **Important:** The combined size of all selected files must not exceed **1MB**.
+### Limitations
+The following limitations apply only when using the default API Endpoint.
+- **Permanent Deletion:** Deletions are permanent and cannot be undone. 
+- **Total File Size:** The combined size of all selected files must not exceed **1MB**.
 
 <details close>
 <summary>Example Usage</summary>
@@ -50,10 +52,11 @@
 
 </details>
 
-## Infrastructure & Setup
+> To keep this tool lightweight, private, free to use, and avoid overloading free-tier resources, **you are encouraged to provide your own API endpoint.**
 
-To keep this tool lightweight, private, free to use, and avoid overloading free-tier resources, **you are encouraged to provide your own API endpoint.** 
-
+<details close>
+<summary><strong>View Infrastructure & Setup</strong></summary>
+   
 ### Why a Custom Endpoint?
 - **Zero Data Logging:** Since you host the backend, your clipboard data never passes through a third-party server.
 - **Resource Management:** By setting up your own endpoint (e.g., on a free tier like Render, Railway, or a home Raspberry Pi), you avoid shared rate limits and service "cold starts."
@@ -65,18 +68,14 @@ To keep this tool lightweight, private, free to use, and avoid overloading free-
 
 The client communicates via a RESTful interface. Each request requires a namespace (your private ID) and a clipboard (a specific slot).
 
-### 1.2 Data Schema
+### 1.2 API Reference
 
-All data exchanged (except for the /list endpoint) must be a JSON Array of Objects with the following structure:
-```javascript
-[{ "file": string, "content": string }]
-```
-
-| Method | Endpoint | Query Parameters | Content-Type | Action |
-| :--- | :--- | :--- | :--- | :--- |
-| **GET** | `/` | `namespace, clipboard` | `None` | Returns the stored array for that clipboard. |
-| **GET** | `/list` | `namespace, sort` | `None` | Returns an array of available clipboard e.g. ["s1", "s2"]. |
-| **POST** | `/` | `namespace, clipboard` | `application/json` | Overwrites the clipboard with the new content body. |
+| Method | Endpoint | Query Parameters | Content-Type | Body | Action |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **GET** | `/list` | `namespace, sort` | `None` | `None` | Returns an array of available clipboard e.g. [string]. |
+| **GET** | `/` | `namespace, clipboard` | `None` | `None` | Returns the content for that clipboard e.g. [{ "path": string, "content": string }] |
+| **POST** | `/` | `namespace, clipboard` | `application/json` | `[{"path": string, "content": string}]` | Overwrites the clipboard with the new content body. |
+| **DELETE** | `/` | `namespace` | `application/json` | `[string]` | Deletes the items matching the provided body. |
 
 ### 2. VS Code Extension Configuration
 
@@ -95,6 +94,8 @@ To ensure Cloud Clipboard handles issues gracefully, your API should return the 
 - 200 OK: Request successful.
 - 400 Bad Request: Missing namespace or clipboard parameters, or invalid body format.
 - 500 Internal Server Error: Server-side failure.
+
+</details>
 
 ## Contributing
 

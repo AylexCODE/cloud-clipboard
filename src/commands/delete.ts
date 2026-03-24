@@ -22,23 +22,24 @@ export default async function del() {
         if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the namespace ${config.get<string>("namespace")!}`);
 
         const clipboardList = await window.showQuickPick(items, {
-            canPickMany: false,
-            title: "Select Clipboard Identifier"
+            canPickMany: true,
+            title: "Select Clipboard Identifier",
+            ignoreFocusOut: config.get<boolean>("persistInputBox", true)
         });
 
-        if(clipboardList?.label){
-            const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete ${clipboardList.label}?`, { modal: true }, "Yes", "No");
+        if(clipboardList && clipboardList?.length > 0){
+            const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete${clipboardList.map(l => ' '+l.label)}?`, { modal: true }, "Yes", "No");
 
             if(confirmDelete === "No" || confirmDelete === undefined) return window.showInformationMessage("Delete cancelled.");
             if(confirmDelete === "Yes" || config.get<boolean>("confirmDelete", true) === false){
-                const clipboard = await deleteClipboard(config, clipboardList.label);
-                if(clipboard === 200) return window.showInformationMessage(`Deleted ${clipboardList.label} successfully`);
+                const clipboard = await deleteClipboard(config, clipboardList.map(l => l.label));
+                if(clipboard === 200) return window.showInformationMessage(`Deleted${clipboardList.map(l => ' '+l.label)} successfully`);
             }
             window.showWarningMessage("Delete error.");
         }else{
             window.showInformationMessage("Delete cancelled.");
         }
     }catch{
-        window.showErrorMessage("An error occured.");
+        window.showErrorMessage("An error occured. Error ID: DELETE");
     }
 }

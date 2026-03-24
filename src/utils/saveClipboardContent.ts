@@ -1,4 +1,4 @@
-import { WorkspaceConfiguration } from "vscode";
+import { window, WorkspaceConfiguration } from "vscode";
 import { ClipboardData } from "../types";
 
 export default async function saveClipboardContent(config: WorkspaceConfiguration, clipboard: string, content: ClipboardData[]): Promise<{ status: number, text: string } | undefined> {
@@ -18,6 +18,7 @@ export default async function saveClipboardContent(config: WorkspaceConfiguratio
 
         return {status: clipboardRes.status, text: clipboardRes.statusText};
     }catch{
+        window.showErrorMessage("An error occured. Error ID: SAVE_CLIPBOARD");
         return {status: 400, text: "Unknown"};
     }
 }

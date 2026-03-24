@@ -1,3 +1,10 @@
+## 0.2.7 - 2026 March 24
+### Change
+- ClipboardData Types key from "file" to "path"
+### Improve
+- Delete command - can delete multiple clipboard at once
+- Error messages
+
 ## 0.2.4 - 2026 March 24
 ### Fix
 - Force Paste i.e. the always replace option for existing items isn't working
@@ -41,10 +48,10 @@
 ### Add
 - Delete clipboard function
 - Example usage
-### Improve
-- Error messages
 ### Change
 - Icon
+### Improve
+- Error messages
 
 ## 0.0.6 - 2026 March 22
 ### Add
@@ -55,13 +62,13 @@
 ## 0.0.5 - 2026 March 22
 ### Add
 - Default Clipboard API Endpoint
+### Change
+- Icon
 ### Improve
 - Error handling, notification messages
 ### Refactor
 - Request handling
 - Copy, and paste flow
-### Change
-- Icon
 
 ## 0.0.2 - 2026 March 21
 ### Add

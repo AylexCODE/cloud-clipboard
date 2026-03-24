@@ -34,7 +34,7 @@ export default async function copy(dirs: Uri[] | undefined){
                 if(!editor) return window.showErrorMessage("No active editor found.");
                 const content = editor.document.getText(editor.selection);
 
-                const saveStatus = await saveClipboardContent(config, clipboard, [{file: "", content: content}]);
+                const saveStatus = await saveClipboardContent(config, clipboard, [{path: "", content: content}]);
                 if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
                     return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
                         if(selection === "Open Settings"){
@@ -58,7 +58,7 @@ export default async function copy(dirs: Uri[] | undefined){
                         try{
                             const fileContent = Buffer.from(await workspace.fs.readFile(file)).toString('utf-8');
                             contents.push({
-                                file: workspace.asRelativePath(file),
+                                path: workspace.asRelativePath(file),
                                 content: fileContent
                             })
                         }catch{
@@ -87,6 +87,6 @@ export default async function copy(dirs: Uri[] | undefined){
             window.showWarningMessage("Copy cancelled.");
         }
     }catch{
-        window.showErrorMessage("An error occured.");
+        window.showErrorMessage("An error occured. Error ID: COPY");
     }
 }

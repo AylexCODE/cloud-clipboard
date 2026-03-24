@@ -27,7 +27,8 @@ export default async function paste(dir: string | undefined) {
 
         const clipboardList = await window.showQuickPick(items, {
             canPickMany: false,
-            title: "Select Clipboard"
+            title: "Select Clipboard",
+            ignoreFocusOut: persistInputBox
         });
 
         if(clipboardList?.label){
@@ -111,38 +112,42 @@ export default async function paste(dir: string | undefined) {
             window.showWarningMessage("Paste cancelled.");
         }
     }catch{
-        window.showErrorMessage("An error occured.");
+        window.showErrorMessage("An error occured. Error ID: PASTE");
     }
 }
 
 async function vscodeClipboard(saveDir: string, folderName: string, clipboardContents: ClipboardData[], clipboard: string, forcePaste: boolean) {
-    const savePath = Uri.joinPath(Uri.file(saveDir), folderName);
-    await workspace.fs.createDirectory(savePath);
+    try{
+        const savePath = Uri.joinPath(Uri.file(saveDir), folderName);
+        await workspace.fs.createDirectory(savePath);
 
-    let isSaved = false;
-    await Promise.all(clipboardContents.map(async (data) => {
-        const filePath = Uri.joinPath(Uri.file(saveDir), folderName, data.file);
+        let isSaved = false;
+        await Promise.all(clipboardContents.map(async (data) => {
+            const filePath = Uri.joinPath(Uri.file(saveDir), folderName, data.path);
 
-        try{
-            await workspace.fs.stat(filePath);
+            try{
+                await workspace.fs.stat(filePath);
 
-            if(forcePaste){
-                save(filePath, data);
-                isSaved = true;
-            }else{
-                const overwrite = await window.showWarningMessage(`A file named "${filePath.path.split('/').pop()}" already exists. Do you want to overwrite it?`, { modal: true }, "Yes", "No");
-                if(overwrite === "Yes"){
+                if(forcePaste){
                     save(filePath, data);
                     isSaved = true;
+                }else{
+                    const overwrite = await window.showWarningMessage(`A file named "${filePath.path.split('/').pop()}" already exists. Do you want to overwrite it?`, { modal: true }, "Yes", "No");
+                    if(overwrite === "Yes"){
+                        save(filePath, data);
+                        isSaved = true;
+                    }
                 }
+            }catch{
+                save(filePath, data);
+                isSaved = true;
             }
-        }catch{
-            save(filePath, data);
-            isSaved = true;
-        }
-    }));
+        }));
 
-    isSaved ? window.showInformationMessage(`Pasted ${clipboard} at ${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath)}.`) : window.showWarningMessage("Paste cancelled.");
+        isSaved ? window.showInformationMessage(`Pasted ${clipboard} at ${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath)}.`) : window.showWarningMessage("Paste cancelled.");
+    }catch{
+        window.showErrorMessage("Couldn't find the information you requested. It may have been moved or deleted. Error ID: PASTE_MULTI");
+    }
 }
 
 async function save(filePath: Uri, data: {content: string}){
