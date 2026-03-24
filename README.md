@@ -24,14 +24,17 @@
    - **As Files:** When pasting content copied from multiple files/folders, the extension automatically switches to file-paste mode.
    - **Smart Routing:** Upon pasting files, you will be prompted for a folder name.
       - Enter a **path** to create a new directory for the content.
-- **Clipboard Management:** Easily delete saved clipboards to keep your cloud storage clean. (Warning: Deletions are permanent and cannot be undone). 
+- **Clipboard Management:** Delete saved clipboards to keep your cloud storage clean.
+> **Warning:** Deletions are permanent and cannot be undone. 
 
 ## Usage
 1. **Copy:** Right-click a selection, file, or folder in the Explorer and select **Cloud Clipboard: Copy**.
 2. **Paste:**
    - **As Text:** Right-click inside an open file and select **Cloud Clipboard: Paste**.
    - **As Files:** Right-click a folder or empty space in the Explorer and select **Cloud Clipboard: Paste.** Follow the prompt to specify a directory name.
-3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items. 
+3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items.
+
+> **Important:** The combined size of all selected files must not exceed **1MB**.
 
 <details close>
 <summary>Example Usage</summary>
@@ -82,14 +85,15 @@ To link your VS Code extension to your API Endpoint:
 1. Open **Settings** (`Ctrl + ,` or `Cmd + ,`).
 2. Search for **"Cloud Clipboard"**.
 3. Fill in your specific details:
-   - **API Endpoint**: `https://example.com` (make sure endpoint does not end with a slash)
+   - **API Endpoint**: `https://example.com`
    - **Connection**: `example`
-  
+> **Caution:** Make sure your API Endpoint does not end with a slash `/`.
+
 ### 3. Error Handling
 
 To ensure Cloud Clipboard handles issues gracefully, your API should return the following status codes:
 - 200 OK: Request successful.
-- 400 Bad Request: Missing connection or clipboard parameters, or invalid body format.
+- 400 Bad Request: Missing namespace or clipboard parameters, or invalid body format.
 - 500 Internal Server Error: Server-side failure.
 
 ## Contributing
