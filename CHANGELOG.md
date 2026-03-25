@@ -1,7 +1,13 @@
+## 0.4.2 - 2026 March 26
+### Fix
+- Issue where the paste input field prompt remained visible after pressing enter
+- Incorrect file path message display when the paste destination differs from the workspace name
+- Delete operation does not cancel automatically if no items are selected
+
 ## 0.3.9 - 2026 March 26
-### Added
+### Add
 - Loaders to provide real-time transparency during background processes
-### Fixed
+### Fix
 - Incorrect display for the "file size limit" error message
 ### Improve
 - Error message for the "total selected files" to accurately reflect endpoint-specific API constraints

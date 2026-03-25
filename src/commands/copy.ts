@@ -26,7 +26,7 @@ export default async function copy(dirs: Uri[] | undefined){
             placeHolder: "My Clipboard",
             ignoreFocusOut: config.get<boolean>("persistInputBox", true),
             validateInput: input => {
-                return input.trim().length <= 64 ? null : "Clipboard name cannot be greater than 64"
+                return input.trim().length <= 64 ? input.trim().length === 0 ? "Clipboard name cannot be empty" : null : "Clipboard name cannot be greater than 64"
             }
         });
 
@@ -61,7 +61,7 @@ export default async function copy(dirs: Uri[] | undefined){
                     const minLength = Math.min(...splitPaths.map(p => p.length));
                     let commonCount = 0;
 
-                    for(let i = 0; i < minLength - 1; i++){ // minLength - 1 ensures we don't accidentally remove the filename
+                    for(let i = 0; i < minLength - 1; i++){
                         const segment = splitPaths[0][i];
                         const isCommon = splitPaths.every(p => p[i] === segment);
 

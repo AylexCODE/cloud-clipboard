@@ -47,15 +47,20 @@ export default async function del() {
 
                 clipboardList.onDidAccept(async () => {
                     didNotAcceptQuickPick = false; clipboardList.dispose();
-                    const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete${clipboardList.selectedItems.length > 1 ? ` these ${clipboardList.selectedItems.length} items:\n` : ':\n'}${clipboardList.selectedItems.map(l => ' '+l.label)}?`, { modal: true }, "Yes", "No");
 
-                    if(confirmDelete === "No" || confirmDelete === undefined) return window.showInformationMessage("Delete: Cancelled");
-                    if(confirmDelete === "Yes" || config.get<boolean>("confirmDelete", true) === false){
-                        progress.report({ message: "Deleting clipboards..." });
-                        const clipboard = await deleteClipboard(config, clipboardList.selectedItems.map(l => l.label));
-                        if(clipboard === 200) return window.showInformationMessage(`Delete: ${clipboardList.selectedItems.length} ${clipboardList.selectedItems.length > 1 ? "items" : "item"} Successfully`);
+                    if(clipboardList.selectedItems.length > 0){
+                        const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete${clipboardList.selectedItems.length > 1 ? ` these ${clipboardList.selectedItems.length} items:\n` : ':\n'}${clipboardList.selectedItems.map(l => ' '+l.label)}?`, { modal: true }, "Yes", "No");
+
+                        if(confirmDelete === "No" || confirmDelete === undefined) return window.showInformationMessage("Delete: Cancelled");
+                        if(confirmDelete === "Yes" || config.get<boolean>("confirmDelete", true) === false){
+                            progress.report({ message: "Deleting clipboards..." });
+                            const clipboard = await deleteClipboard(config, clipboardList.selectedItems.map(l => l.label));
+                            if(clipboard === 200) return window.showInformationMessage(`Delete: ${clipboardList.selectedItems.length} ${clipboardList.selectedItems.length > 1 ? "items" : "item"} Successfully`);
+                        }
+                        window.showWarningMessage("Delete: Error");
+                    }else{
+                        return window.showWarningMessage("Delete: Cancelled, No Items Selected");
                     }
-                    window.showWarningMessage("Delete: Error");
                 });
 
                 clipboardList.onDidHide(() => {

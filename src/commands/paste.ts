@@ -52,12 +52,17 @@ export default async function paste(dir: string | undefined) {
                 let didNotAcceptQuickPick = true;
                 clipboardList.onDidAccept(async () => {
                     didNotAcceptQuickPick = false; clipboardList.dispose();
-                    const editor = window.activeTextEditor;
-                    if(!editor) return window.showErrorMessage("No active editor found.");
 
                     progress.report({ message: `Getting Clipboard From "${clipboardList.selectedItems[0].label}"` });
                     if(dir === undefined){
                         const clipboard = await getClipboardContent(config, clipboardList.selectedItems[0].label);
+
+                        const editor = window.activeTextEditor;
+                        if(!editor) {
+                            resolve();
+                            return window.showErrorMessage("No active editor found.");
+                        }
+
                         if(clipboard){
                             if(clipboard.length === 1){
                                 const selection = editor.selection;
@@ -93,6 +98,7 @@ export default async function paste(dir: string | undefined) {
                                 let didNotEnterFolderName = true;
                                 folderName.onDidAccept(() => {
                                     didNotEnterFolderName = false;
+                                    folderName.dispose();
                                     resolve();
                                     vscodeClipboard(saveDir.uri.path, folderName.value, clipboard, clipboardList.selectedItems[0].label, config.get<boolean>("forcePaste", false));
                                 });
@@ -147,7 +153,7 @@ export default async function paste(dir: string | undefined) {
 
                                 fileName.show();
                             }else if(clipboard.length !== 0){
-                                progress.report({ message: "Contains Multisple Files" });
+                                progress.report({ message: "Contains Multiple Files" });
 
                                 folderName.prompt = "Enter save path";
                                 folderName.title = "Save To Folder";
@@ -224,7 +230,7 @@ async function vscodeClipboard(saveDir: string, folderName: string, clipboardCon
             }
         }));
 
-        isSaved ? window.showInformationMessage(`Pasted "${clipboard}" at "${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath)}"`) : window.showWarningMessage("Paste: Cancelled");
+        isSaved ? window.showInformationMessage(`Pasted "${clipboard}" at "${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath).split("\\").pop()}"`) : window.showWarningMessage("Paste: Cancelled");
     }catch{
         window.showErrorMessage("Couldn't find the information you requested. It may have been moved or deleted. Error ID: PASTE_MULTI");
     }
