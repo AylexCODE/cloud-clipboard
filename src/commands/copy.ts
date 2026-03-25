@@ -1,8 +1,7 @@
-import { commands, Uri, window, workspace } from "vscode";
+import { commands, ProgressLocation, Uri, window, workspace } from "vscode";
 import { ClipboardData } from "../types";
 import saveClipboardContent from "../utils/saveClipboardContent";
 import getFiles from "../utils/getFiles";
-import path = require("path");
 
 export default async function copy(dirs: Uri[] | undefined){
     try{
@@ -24,6 +23,7 @@ export default async function copy(dirs: Uri[] | undefined){
         const clipboard = await window.showInputBox({
             prompt: "Create clipboard",
             title: "Copy As",
+            placeHolder: "My Clipboard",
             ignoreFocusOut: config.get<boolean>("persistInputBox", true),
             validateInput: input => {
                 return input.trim().length <= 64 ? null : "Clipboard name cannot be greater than 64"
@@ -31,83 +31,92 @@ export default async function copy(dirs: Uri[] | undefined){
         });
 
         if(clipboard){
-            if(dirs === undefined){
-                if(!editor) return window.showErrorMessage("No active editor found.");
-                const content = editor.document.getText(editor.selection);
+            window.withProgress({
+                location: ProgressLocation.Notification,
+                title: "Copy",
+                cancellable: true
+            }, async (progress, token) => {
+                progress.report({ message: `To "${clipboard}"` });
+                if(dirs === undefined){
+                    if(!editor) return window.showErrorMessage("No active editor found.");
+                    const content = editor.document.getText(editor.selection);
 
-                const totalBytes = (await workspace.fs.stat(editor.document.uri)).size;
+                    const totalBytes = (await workspace.fs.stat(editor.document.uri)).size;
 
-                const saveStatus = await saveClipboardContent(config, clipboard, [{path: "-", content: content}]);
-                if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
-                    return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
-                        if(selection === "Open Settings"){
-                            commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
-                        }
-                    });
-                }
-
-                copyStatus(saveStatus?.status, totalBytes, clipboard);
-            }else{
-                const contents: ClipboardData[] = [];
-                let totalBytes: number = 0;
-
-                const splitPaths = dirs.map(p => workspace.asRelativePath(p.path).split('/'));
-                const minLength = Math.min(...splitPaths.map(p => p.length));
-                let commonCount = 0;
-
-                for(let i = 0; i < minLength - 1; i++){ // minLength - 1 ensures we don't accidentally remove the filename
-                    const segment = splitPaths[0][i];
-                    const isCommon = splitPaths.every(p => p[i] === segment);
-
-                    if (isCommon) {
-                        commonCount++;
-                    } else {
-                        break;
+                    const saveStatus = await saveClipboardContent(config, clipboard, [{path: "-", content: content}], token);
+                    if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
+                        return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                            if(selection === "Open Settings"){
+                                commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+                            }
+                        });
                     }
-                }
 
-                for(const dir of dirs){
-                    const files = await getFiles(dir);
+                    copyStatus(saveStatus?.status, saveStatus?.text, totalBytes, clipboard);
+                }else{
+                    const contents: ClipboardData[] = [];
+                    let totalBytes: number = 0;
 
-                    totalBytes = files.bytes;
-                    
-                    for(const file of files.files){
-                        try{
-                            const fileContent = Buffer.from(await workspace.fs.readFile(file)).toString('utf-8');
-                            contents.push({
-                                path: workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/'),
-                                content: fileContent
-                            })
-                        }catch{
-                            return window.showErrorMessage(`Failed to copy ${workspace.asRelativePath(file)}.`);
+                    const splitPaths = dirs.map(p => workspace.asRelativePath(p.path).split('/'));
+                    const minLength = Math.min(...splitPaths.map(p => p.length));
+                    let commonCount = 0;
+
+                    for(let i = 0; i < minLength - 1; i++){ // minLength - 1 ensures we don't accidentally remove the filename
+                        const segment = splitPaths[0][i];
+                        const isCommon = splitPaths.every(p => p[i] === segment);
+
+                        if (isCommon) {
+                            commonCount++;
+                        } else {
+                            break;
                         }
                     }
-                }
 
-                const saveStatus = await saveClipboardContent(config, clipboard, contents);
-                if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
-                    return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
-                        if (selection === "Open Settings") {
-                            commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+                    for(const dir of dirs){
+                        const files = await getFiles(dir);
+
+                        for(const file of files.files){
+                            try{
+                                totalBytes += (await workspace.fs.stat(file)).size;
+
+                                const fileContent = Buffer.from(await workspace.fs.readFile(file)).toString('utf-8');
+                                contents.push({
+                                    path: workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/'),
+                                    content: fileContent
+                                })
+                            }catch{
+                                return window.showErrorMessage(`Copy: "${workspace.asRelativePath(file)}" Failed`);
+                            }
                         }
-                    });
-                }
+                    }
 
-                copyStatus(saveStatus?.status, totalBytes, clipboard);
-            }
+                    const saveStatus = await saveClipboardContent(config, clipboard, contents, token,);
+                    if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
+                        return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                            if (selection === "Open Settings") {
+                                commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+                            }
+                        });
+                    }
+
+                    copyStatus(saveStatus?.status, saveStatus?.text, totalBytes, clipboard);
+                }
+            });
         }else{
-            window.showWarningMessage("Copy cancelled.");
+            window.showWarningMessage("Copy: Cancelled");
         }
     }catch{
         window.showErrorMessage("An error occurred. Error ID: COPY");
     }
 }
 
-function copyStatus(status: number | undefined, totalBytes: number, clipboard: string){
+function copyStatus(status: number | undefined, text: string | undefined, totalBytes: number, clipboard: string){
     if(status === 200){
-        window.showInformationMessage(`Copied ${clipboard} to cloud clipboard.`);
+        window.showInformationMessage(`Copy: "${clipboard}" Successfully`);
     }else if(status === 413){
-        window.showErrorMessage(`Total selected files cannot exceed 1 MiB. Your selection is ${(totalBytes / 1048576).toFixed(2)} MiB`);
+        window.showErrorMessage(`Copy: Total selected files are too big, your selection is ${(totalBytes / 1048576).toFixed(2)} MiB. (This limit depends on the specific API endpoint being used)`);
+    }else if(status === 0 && text === "AbortError"){
+        window.showErrorMessage("Copy: Cancelled");
     }else{
         window.showErrorMessage("An error occurred while copying to cloud clipboard.");
     }

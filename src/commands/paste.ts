@@ -1,4 +1,4 @@
-import { commands, Uri, window, workspace } from "vscode";
+import { commands, ProgressLocation, Uri, window, workspace } from "vscode";
 import path = require("path");
 
 import getClipboards from "../utils/getClipboardList";
@@ -9,108 +9,188 @@ export default async function paste(dir: string | undefined) {
     try{
         const config = workspace.getConfiguration("cloudclipboard");
 
-        const connectionList = await getClipboards(config);
-        if(connectionList === undefined){
-            return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
-                if (selection === "Open Settings") {
-                    commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+        window.withProgress({
+            location: ProgressLocation.Notification,
+            title: "Paste",
+            cancellable: true
+        }, async (progress, token) => {
+            await new Promise<void>(async (resolve) => {
+                progress.report({ message: "Getting Clipboards..." });
+                const connectionList = await getClipboards(config);
+                progress.report({ message: "Select Clipboard" });
+                if(connectionList === undefined){
+                    return window.showInformationMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
+                        if (selection === "Open Settings") {
+                            commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
+                        }
+                    });
                 }
-            });
-        }
-        const persistInputBox = config.get<boolean>("persistInputBox", true);
+                const persistInputBox = config.get<boolean>("persistInputBox", true);
 
-        const items = connectionList.map((conn) => {
-            return { label: conn };
-        });
+                const clipboardList = window.createQuickPick();
+                const fileName = window.createInputBox();
+                const folderName = window.createInputBox();
 
-        if(items.length === 0) return window.showWarningMessage(`Clipboard is empty for the namespace ${config.get<string>("namespace")!}`);
+                token.onCancellationRequested(() => {
+                    window.showInformationMessage("Paste: Cancelled");
+                    clipboardList.dispose();
+                    fileName.dispose();
+                    folderName.dispose();
+                    resolve();
+                });
 
-        const clipboardList = await window.showQuickPick(items, {
-            canPickMany: false,
-            title: "Select Clipboard",
-            ignoreFocusOut: persistInputBox
-        });
+                const items = connectionList.map((conn) => {
+                    return { label: conn };
+                });
 
-        if(clipboardList?.label){
-            if(dir === undefined){
-                const editor = window.activeTextEditor;
-                if(!editor) return window.showErrorMessage("No active editor found.");
-                
-                const clipboard = await getClipboardContent(config, clipboardList.label);
-                if(clipboard){
-                    if(clipboard.length === 1){
-                        const selection = editor.selection;
-                        const pasted = await editor.edit(editBuilder => {
-                            editBuilder.replace(selection, clipboard[0].content);
-                        });
+                if(items.length === 0) return window.showWarningMessage(`Paste: Clipboard is empty for the namespace ${config.get<string>("namespace")!}.`);
 
-                        if(!pasted) return window.showWarningMessage("Paste error.");
-                        
-                        window.showInformationMessage(`Pasted ${clipboardList.label} at line ${selection.active.line + 1}`);
-                    }else if(clipboard.length !== 0){
-                        const getDefault = workspace.asRelativePath(editor.document.uri).split("/"); getDefault.pop();
-                        const defaultPath = `${getDefault.join("/")}/`;
+                clipboardList.items = items;
+                clipboardList.title = "Select Clipboard";
+                clipboardList.ignoreFocusOut = persistInputBox;
+            
+                let didNotAcceptQuickPick = true;
+                clipboardList.onDidAccept(async () => {
+                    didNotAcceptQuickPick = false; clipboardList.dispose();
+                    const editor = window.activeTextEditor;
+                    if(!editor) return window.showErrorMessage("No active editor found.");
 
-                        const folderName = await window.showInputBox({
-                            prompt: "Enter save path",
-                            title: "Save To Folder",
-                            value: defaultPath,
-                            valueSelection: [defaultPath.length, defaultPath.length],
-                            ignoreFocusOut: persistInputBox
-                        });
+                    progress.report({ message: `Getting Clipboard From "${clipboardList.selectedItems[0].label}"` });
+                    if(dir === undefined){
+                        const clipboard = await getClipboardContent(config, clipboardList.selectedItems[0].label);
+                        if(clipboard){
+                            if(clipboard.length === 1){
+                                const selection = editor.selection;
+                                const pasted = await editor.edit(editBuilder => {
+                                    editBuilder.replace(selection, clipboard[0].content);
+                                });
 
-                        if(folderName === undefined) return window.showWarningMessage("Paste cancelled.");
+                                if(!pasted){
+                                    resolve();
+                                    return window.showWarningMessage("Paste: Error");
+                                }
+                                
+                                resolve();
+                                window.showInformationMessage(`Paste: "${clipboardList.selectedItems[0].label}" At Line ${selection.active.line + 1}`);
+                            }else if(clipboard.length !== 0){
+                                const getDefault = workspace.asRelativePath(editor.document.uri).split("/"); getDefault.pop();
+                                const defaultPath = `${getDefault.join("/")}/`;
 
-                        const saveDir = workspace.getWorkspaceFolder(editor.document.uri);
-                        if(!saveDir) return window.showWarningMessage("Paste error.");
+                                folderName.prompt = "Enter save path";
+                                folderName.title = "Save To Folder";
+                                folderName.placeholder = "My Folder";
+                                folderName.value = defaultPath;
+                                folderName.valueSelection = [defaultPath.length, defaultPath.length];
+                                folderName.ignoreFocusOut = persistInputBox;
 
-                        vscodeClipboard(saveDir.uri.path, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste", false));
-                    }else{
-                        return window.showWarningMessage("Paste cancelled, clipboard is empty.");
-                    }
-                }else{
-                    return window.showWarningMessage("Paste error.");
-                }
-            }else{
-                const clipboard = await getClipboardContent(config, clipboardList.label);
-                if(clipboard){
-                    if(clipboard.length === 1){
-                        const fileName = await window.showInputBox({
-                            prompt: "Create file name",
-                            title: "Save As File",
-                            ignoreFocusOut: persistInputBox,
-                            validateInput: input => {
-                                return input.trim().length == 0 ? "File name cannot be empty" : null
+                                const saveDir = workspace.getWorkspaceFolder(editor.document.uri);
+                                if(!saveDir){
+                                    resolve();
+                                    folderName.dispose();
+                                    return window.showWarningMessage("Paste: Error");
+                                }
+
+                                let didNotEnterFolderName = true;
+                                folderName.onDidAccept(() => {
+                                    didNotEnterFolderName = false;
+                                    resolve();
+                                    vscodeClipboard(saveDir.uri.path, folderName.value, clipboard, clipboardList.selectedItems[0].label, config.get<boolean>("forcePaste", false));
+                                });
+
+                                folderName.onDidHide(() => {
+                                    resolve();
+                                    folderName.dispose();
+                                    if(didNotEnterFolderName) window.showWarningMessage("Paste: Cancelled");
+                                });
+
+                                folderName.show();
+                            }else{
+                                resolve();
+                                return window.showWarningMessage("Paste: Cancelled, clipboard is empty.");
                             }
-                        });
-                        if(!fileName) return window.showWarningMessage("Paste cancelled.");
-                        
-                        const filePath = Uri.file(path.join(dir, fileName));
-                        await workspace.fs.writeFile(filePath, Buffer.from(clipboard[0].content, "utf-8"));
-
-                        window.showInformationMessage(`Pasted ${clipboardList.label} at ${fileName}`);
-                        const createdFile = await workspace.openTextDocument(filePath);
-                        await window.showTextDocument(createdFile);
-                    }else if(clipboard.length !== 0){
-                        const folderName = await window.showInputBox({
-                            prompt: "Enter save path",
-                            title: "Save To Folder",
-                            ignoreFocusOut: persistInputBox
-                        });
-
-                        if(folderName === undefined) return window.showWarningMessage("Paste cancelled.");
-
-                        vscodeClipboard(dir, folderName, clipboard, clipboardList.label, config.get<boolean>("forcePaste")!);
+                        }else{
+                            resolve();
+                            return window.showWarningMessage("Paste: Error");
+                        }
                     }else{
-                        return window.showWarningMessage("Paste cancelled, clipboard is empty.");
+                        const clipboard = await getClipboardContent(config, clipboardList.selectedItems[0].label);
+                        if(clipboard){
+                            if(clipboard.length === 1){
+                                progress.report({ message: "Contains 1 File" });
+
+                                fileName.prompt = "Create file name";
+                                fileName.title = "Save As File";
+                                fileName.placeholder = "File.js";
+                                fileName.ignoreFocusOut = persistInputBox;
+                                fileName.onDidChangeValue(value => {
+                                    fileName.validationMessage = value.trim().length == 0 ? "File name cannot be empty" : undefined;
+                                })
+                                
+                                let didNotEnterFileName = true;
+                                fileName.onDidAccept(async () => {
+                                    didNotEnterFileName = false;
+                                    fileName.dispose();
+                                    const filePath = Uri.file(path.join(dir, fileName.value));
+                                    await workspace.fs.writeFile(filePath, Buffer.from(clipboard[0].content, "utf-8"));
+                                    
+                                    window.showInformationMessage(`Paste: "${clipboardList.selectedItems[0].label}" at "${fileName.value}"`);
+                                    const createdFile = await workspace.openTextDocument(filePath);
+                                    await window.showTextDocument(createdFile);
+                                    resolve();
+                                });
+                                
+                                fileName.onDidHide(() => {
+                                    resolve();
+                                    fileName.dispose();
+                                    if(didNotEnterFileName) window.showWarningMessage("Paste: Cancelled");
+                                });
+
+                                fileName.show();
+                            }else if(clipboard.length !== 0){
+                                progress.report({ message: "Contains Multisple Files" });
+
+                                folderName.prompt = "Enter save path";
+                                folderName.title = "Save To Folder";
+                                folderName.placeholder = "My Folder";
+                                folderName.ignoreFocusOut = persistInputBox;
+
+                                let didNotEnterFolderName = true;
+                                folderName.onDidAccept(() => {
+                                    didNotEnterFolderName = false;
+                                    folderName.dispose();
+                                    resolve();
+                                    vscodeClipboard(dir, folderName.value, clipboard, clipboardList.selectedItems[0].label, config.get<boolean>("forcePaste")!);
+                                });
+
+                                folderName.onDidHide(() => {
+                                    if(didNotEnterFolderName) window.showWarningMessage("Paste: Cancelled");
+                                    folderName.dispose();
+                                    resolve();
+                                });
+
+                                folderName.show();
+                            }else{
+                                resolve();
+                                return window.showWarningMessage("Paste: Cancelled, clipboard is empty.");
+                            }
+                        }else{
+                            resolve();
+                            return window.showWarningMessage("Paste: Error");
+                        }
                     }
-                }else{
-                    return window.showWarningMessage("Paste error.");
-                }
-            }
-        }else{
-            window.showWarningMessage("Paste cancelled.");
-        }
+                });
+
+                clipboardList.onDidHide(() => {
+                    if(didNotAcceptQuickPick) {
+                        window.showWarningMessage("Paste: Cancelled");
+                        resolve();
+                    }
+                    clipboardList.dispose();
+                });
+
+                clipboardList.show();
+            });
+        });
     }catch{
         window.showErrorMessage("An error occurred. Error ID: PASTE");
     }
@@ -144,7 +224,7 @@ async function vscodeClipboard(saveDir: string, folderName: string, clipboardCon
             }
         }));
 
-        isSaved ? window.showInformationMessage(`Pasted ${clipboard} at ${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath)}.`) : window.showWarningMessage("Paste cancelled.");
+        isSaved ? window.showInformationMessage(`Pasted "${clipboard}" at "${savePath.path.split("/").pop() === workspace.name ? savePath.path.split("/").pop() : workspace.asRelativePath(savePath)}"`) : window.showWarningMessage("Paste: Cancelled");
     }catch{
         window.showErrorMessage("Couldn't find the information you requested. It may have been moved or deleted. Error ID: PASTE_MULTI");
     }

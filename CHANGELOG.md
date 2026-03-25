@@ -1,8 +1,16 @@
+## 0.3.9 - 2026 March 26
+### Added
+- Loaders to provide real-time transparency during background processes
+### Fixed
+- Incorrect display for the "file size limit" error message
+### Improve
+- Error message for the "total selected files" to accurately reflect endpoint-specific API constraints
+
 ## 0.3.6 - 2026 March 25
 ### Fix
 - Issue where files were saved to the incorrect directory due to a pathing error
 ### Improve
-- Mssaging for the delete command to provide clearer confirmation
+- Messages for the delete command to provide clearer confirmation
 
 ## 0.3.0 - 2026 March 24
 ### Change

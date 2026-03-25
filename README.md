@@ -55,6 +55,7 @@ The following limitations apply only when using the default API Endpoint.
 > To keep this tool lightweight, private, free to use, and avoid overloading free-tier resources, **you are encouraged to provide your own API endpoint.**
 
 <details close>
+
 <summary><strong>View Infrastructure & Setup</strong></summary>
    
 ### Why a Custom Endpoint?
