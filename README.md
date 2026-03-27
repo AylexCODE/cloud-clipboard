@@ -74,7 +74,7 @@ The client communicates via a RESTful interface. Each request requires a namespa
 | Method | Endpoint | Query Parameters | Content-Type | Body | Action |
 | :--- | :--- | :--- | :--- | :--- | :--- |
 | **GET** | `/list` | `namespace, sort` | `None` | `None` | Returns an array of available clipboard e.g. [string]. |
-| **GET** | `/` | `namespace, clipboard` | `None` | `None` | Returns the content for that clipboard e.g. [{ "path": string, "content": string }] |
+| **GET** | `/content` | `namespace, clipboard` | `None` | `None` | Returns the content for that clipboard e.g. [{ "path": string, "content": string }] |
 | **POST** | `/` | `namespace, clipboard` | `application/json` | `[{"path": string, "content": string}]` | Overwrites the clipboard with the new content body. |
 | **DELETE** | `/` | `namespace` | `application/json` | `[string]` | Deletes the items matching the provided body. |
 
