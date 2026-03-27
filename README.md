@@ -33,6 +33,8 @@
    - **As Files:** Right-click a folder or empty space in the Explorer and select **Cloud Clipboard: Paste.** Follow the prompt to specify a directory name.
 3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items.
 
+> You can **manage your clipboards** through the **control panel UI** when using the default API endpoint. Visit <a href="https://cloud-clipboard-api.onrender.com">https://cloud-clipboard-api.onrender.com</a> to get started.
+
 ### Limitations
 The following limitations apply only when using the default API Endpoint.
 - **Permanent Deletion:** Deletions are permanent and cannot be undone. 

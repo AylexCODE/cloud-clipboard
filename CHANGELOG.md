@@ -1,3 +1,7 @@
+## 1.4.2 - 2026 March 27
+### Add
+- Control panel UI for managing clipboards when using the default API endpoint (visit extension details for info.)
+
 ## 0.4.2 - 2026 March 26
 ### Fix
 - Issue where the paste input field prompt remained visible after pressing enter
