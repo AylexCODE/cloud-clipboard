@@ -20,7 +20,7 @@ export default async function getFiles(dirs: Uri): Promise<FilesData> {
                     totalSizeBytes += inner.bytes;
                 }else if(type === FileType.File){
                     files.push(path);
-                    totalSizeBytes =+ (await workspace.fs.stat(path)).size;
+                    totalSizeBytes += (await workspace.fs.stat(path)).size;
                 }
             }
         }
@@ -29,7 +29,8 @@ export default async function getFiles(dirs: Uri): Promise<FilesData> {
             bytes: totalSizeBytes,
             files
         };
-    }catch{
+    }catch(error){
+        console.error(error);
         window.showErrorMessage("An error occurred. Error ID: GET_FILES");
         return {
             bytes: 0,

@@ -9,3 +9,10 @@ export interface FilesData {
     bytes: number;
     files: Uri[];
 }
+
+export interface ClipboardSummary {
+    name: string;
+    size?: number;
+    fileCount?: number;
+    updatedAt?: string;
+}

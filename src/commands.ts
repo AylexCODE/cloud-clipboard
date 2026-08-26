@@ -8,17 +8,17 @@ export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri, uris: Uri[]) => {
         try{
             if(!uris || uris.length === 0) return window.showWarningMessage('Please select one or more files or directories, and right click on one of them.');
-            copy(uris);
-        }catch{window.showErrorMessage('Error selecting directory.')}
+            copy(uris, context);
+        }catch(error){console.error(error); window.showErrorMessage('Error selecting directory.')}
     }));
-    context.subscriptions.push(commands.registerCommand('cloudclipboard.editorCopy', () => {copy(undefined)}));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.editorCopy', () => {copy(undefined, context)}));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.paste', async(uri?: Uri) => {
         try{
             const dir = await getDirectory(uri);
             if(!dir) return window.showWarningMessage('Please select a directory.');
-            paste(dir);
-        }catch{window.showErrorMessage('Error selecting directory.')}
+            paste(dir, context);
+        }catch(error){console.error(error); window.showErrorMessage('Error selecting directory.')}
     }));
-    context.subscriptions.push(commands.registerCommand('cloudclipboard.editorPaste', () => {paste(undefined)}));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.editorPaste', () => {paste(undefined, context)}));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.delete', () => {del()}));
 }

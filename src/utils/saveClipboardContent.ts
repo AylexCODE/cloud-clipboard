@@ -1,5 +1,6 @@
 import { CancellationToken, window, WorkspaceConfiguration } from "vscode";
 import { ClipboardData } from "../types";
+import isSecureEndpoint from "./isSecureEndpoint";
 
 import { setTimeout } from "timers/promises";
 
@@ -8,6 +9,10 @@ export default async function saveClipboardContent(config: WorkspaceConfiguratio
     const clipboardNamespace: string = config.get<string>("namespace")!;
 
     if(endpoint.trim().length === 0 || clipboardNamespace.trim().length === 0) return undefined;
+    if(!isSecureEndpoint(endpoint)) {
+        window.showErrorMessage("Cloud Clipboard: API Endpoint must use HTTPS (or be localhost). Please update it in settings.");
+        return undefined;
+    }
 
     const controller = new AbortController();
     token.onCancellationRequested(() => {
@@ -29,6 +34,7 @@ export default async function saveClipboardContent(config: WorkspaceConfiguratio
         if(error.name === "AbortError"){
             return {status: 0, text: "AbortError"};
         }else{
+            console.error(error);
             window.showErrorMessage("An error occurred. Error ID: SAVE_CLIPBOARD");
             return {status: 400, text: "Unknown"};
         }

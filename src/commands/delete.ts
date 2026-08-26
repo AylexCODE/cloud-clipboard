@@ -1,78 +1,77 @@
-import { commands, ProgressLocation, window, workspace } from "vscode";
+import { ProgressLocation, window, workspace } from "vscode";
 import getClipboards from "../utils/getClipboardList";
 import deleteClipboard from "../utils/deleteClipboard";
+import showConfigMessage from "../utils/showConfigMessage";
+import promptQuickPick from "../utils/promptQuickPick";
+import withSlowNotice from "../utils/withSlowNotice";
+import formatClipboardSummary from "../utils/formatClipboardSummary";
 
-export default async function del() {    
+export default async function del() {
     try{
         const config = workspace.getConfiguration("cloudclipboard");
 
-        window.withProgress({
+        await window.withProgress({
             location: ProgressLocation.Notification,
             title: "Delete",
             cancellable: true
         }, async (progress, token) => {
-            let didNotAcceptQuickPick = true;
+            progress.report({ message: "Getting Clipboards..." });
+            const connectionList = await withSlowNotice(
+                getClipboards(config),
+                () => progress.report({ message: "Still waking up the server... this can take up to 30s on the first request." })
+            );
 
-            await new Promise<void>(async (resolve) => {
-                const clipboardList = window.createQuickPick();
+            if(connectionList === undefined){
+                showConfigMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
+                return;
+            }
 
-                token.onCancellationRequested(() => {
-                    window.showInformationMessage("Delete: Cancelled");
-                    clipboardList.dispose();
-                    resolve();
-                });
-                
-                progress.report({ message: "Getting Clipboards..." });
-                const connectionList = await getClipboards(config);
-                progress.report({ message: "Select Clipboards" });
-            
-                if(connectionList === undefined){
-                    return window.showWarningMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.", "Open Settings").then(selection => {
-                        if (selection === "Open Settings") {
-                            commands.executeCommand("workbench.action.openSettings", "@ext:AylexCODE.cloud-clipboard");
-                        }
-                    });
-                }
+            if(connectionList.length === 0){
+                window.showWarningMessage(`Delete: Clipboard is empty for the namespace ${config.get<string>("namespace")!}.`);
+                return;
+            }
 
-                const items = connectionList.map((conn) => {
-                    return { label: conn };
-                });
-
-                if(items.length === 0) return window.showWarningMessage(`Delete: Clipboard is empty for the namespace ${config.get<string>("namespace")!}.`);
-
-                clipboardList.items = items;
-                clipboardList.title = "Select Clipboards";
-                clipboardList.canSelectMany = true;
-                clipboardList.ignoreFocusOut = config.get<boolean>("persistInputBox", true);
-
-                clipboardList.onDidAccept(async () => {
-                    didNotAcceptQuickPick = false; clipboardList.dispose();
-
-                    if(clipboardList.selectedItems.length > 0){
-                        const confirmDelete = await window.showWarningMessage(`Are you sure you want to delete${clipboardList.selectedItems.length > 1 ? ` these ${clipboardList.selectedItems.length} items:\n` : ':\n'}${clipboardList.selectedItems.map(l => ' '+l.label)}?`, { modal: true }, "Yes", "No");
-
-                        if(confirmDelete === "No" || confirmDelete === undefined) return window.showInformationMessage("Delete: Cancelled");
-                        if(confirmDelete === "Yes" || config.get<boolean>("confirmDelete", true) === false){
-                            progress.report({ message: "Deleting clipboards..." });
-                            const clipboard = await deleteClipboard(config, clipboardList.selectedItems.map(l => l.label));
-                            if(clipboard === 200) return window.showInformationMessage(`Delete: ${clipboardList.selectedItems.length} ${clipboardList.selectedItems.length > 1 ? "items" : "item"} Successfully`);
-                        }
-                        window.showWarningMessage("Delete: Error");
-                    }else{
-                        return window.showWarningMessage("Delete: Cancelled, No Items Selected");
-                    }
-                });
-
-                clipboardList.onDidHide(() => {
-                    if(didNotAcceptQuickPick) window.showInformationMessage("Delete: Cancelled");
-                    clipboardList.dispose();
-                    resolve();
-                });
-
-                clipboardList.show();
+            progress.report({ message: "Select Clipboards" });
+            const selected = await promptQuickPick({
+                items: connectionList.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
+                title: "Select Clipboards",
+                canSelectMany: true,
+                ignoreFocusOut: config.get<boolean>("persistInputBox", true),
+                token
             });
+
+            if(!selected || selected.length === 0){
+                window.showWarningMessage("Delete: Cancelled");
+                return;
+            }
+
+            const confirmDelete = config.get<boolean>("confirmDelete", true)
+                ? await window.showWarningMessage(
+                    `Are you sure you want to delete${selected.length > 1 ? ` these ${selected.length} items:\n` : ':\n'}${selected.map(l => ' '+l)}?`,
+                    { modal: true }, "Yes", "No"
+                )
+                : "Yes";
+
+            if(confirmDelete === "No" || confirmDelete === undefined){
+                window.showInformationMessage("Delete: Cancelled");
+                return;
+            }
+
+            progress.report({ message: "Deleting clipboards..." });
+            const status = await withSlowNotice(
+                deleteClipboard(config, selected),
+                () => progress.report({ message: "Still deleting... this can take a moment on a cold server." })
+            );
+
+            if(status === 200){
+                window.showInformationMessage(`Delete: ${selected.length} ${selected.length > 1 ? "items" : "item"} Successfully`);
+                return;
+            }
+
+            window.showWarningMessage("Delete: Error");
         });
-    }catch{
+    }catch(error){
+        console.error(error);
         window.showErrorMessage("An error occurred. Error ID: DELETE");
     }
 }
