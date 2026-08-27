@@ -7,7 +7,10 @@ import del from "./commands/delete";
 export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri, uris: Uri[]) => {
         try{
-            if(!uris || uris.length === 0) return window.showWarningMessage('Please select one or more files or directories, and right click on one of them.');
+            if(!uris || uris.length === 0){
+                window.showWarningMessage('Please select one or more files or directories, and right click on one of them.');
+                return;
+            }
             copy(uris, context);
         }catch(error){console.error(error); window.showErrorMessage('Error selecting directory.')}
     }));
@@ -15,7 +18,10 @@ export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.paste', async(uri?: Uri) => {
         try{
             const dir = await getDirectory(uri);
-            if(!dir) return window.showWarningMessage('Please select a directory.');
+            if(!dir){
+                window.showWarningMessage('Please select a directory.');
+                return;
+            }
             paste(dir, context);
         }catch(error){console.error(error); window.showErrorMessage('Error selecting directory.')}
     }));

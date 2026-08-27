@@ -5,8 +5,12 @@ import getFiles from "../utils/getFiles";
 import isSecureEndpoint from "../utils/isSecureEndpoint";
 import showConfigMessage from "../utils/showConfigMessage";
 import withSlowNotice from "../utils/withSlowNotice";
+import isBinaryFile from "../utils/isBinaryFile";
+import { maybeCompress } from "../utils/compression";
 
-export default async function copy(dirs: Uri[] | undefined, context: ExtensionContext){
+const MAX_LISTED_SKIPPED_FILES = 10;
+
+export default async function copy(dirs: Uri[] | undefined, _context: ExtensionContext){
     try{
         const config = workspace.getConfiguration("cloudclipboard");
 
@@ -19,10 +23,14 @@ export default async function copy(dirs: Uri[] | undefined, context: ExtensionCo
         }
 
         const editor = window.activeTextEditor;
-        if(!editor && dirs === undefined) return window.showErrorMessage("No active editor found.");
+        if(!editor && dirs === undefined){
+            window.showErrorMessage("No active editor found.");
+            return;
+        }
 
         if(dirs === undefined && editor && editor.document.getText(editor.selection).trim().length === 0){
-            return window.showWarningMessage("Please highlight content to save.");
+            window.showWarningMessage("Please highlight content to save.");
+            return;
         }
 
         const clipboard = await window.showInputBox({
@@ -36,7 +44,8 @@ export default async function copy(dirs: Uri[] | undefined, context: ExtensionCo
         });
 
         if(!clipboard){
-            return window.showWarningMessage("Copy: Cancelled");
+            window.showWarningMessage("Copy: Cancelled");
+            return;
         }
 
         window.withProgress({
@@ -46,11 +55,22 @@ export default async function copy(dirs: Uri[] | undefined, context: ExtensionCo
         }, async (progress, token) => {
             progress.report({ message: `To "${clipboard}"` });
 
-            const { contents, totalBytes } = dirs === undefined
+            const { contents, totalBytes, skippedBinary } = dirs === undefined
                 ? collectEditorSelection(editor!)
                 : await collectDirectoryContents(dirs);
 
             if(contents === undefined) return; // error already shown by collectDirectoryContents
+
+            if(skippedBinary.length > 0){
+                const listed = skippedBinary.slice(0, MAX_LISTED_SKIPPED_FILES).join(", ");
+                const more = skippedBinary.length > MAX_LISTED_SKIPPED_FILES ? `, and ${skippedBinary.length - MAX_LISTED_SKIPPED_FILES} more` : "";
+                window.showWarningMessage(`Copy: Skipped ${skippedBinary.length} image/binary file${skippedBinary.length > 1 ? "s" : ""} not supported by Cloud Clipboard: ${listed}${more}`);
+            }
+
+            if(contents.length === 0){
+                window.showWarningMessage("Copy: Nothing to copy — every selected file was an image/binary file, which Cloud Clipboard doesn't support.");
+                return;
+            }
 
             const saveStatus = await withSlowNotice(
                 saveClipboardContent(config, clipboard, contents, token),
@@ -70,17 +90,26 @@ export default async function copy(dirs: Uri[] | undefined, context: ExtensionCo
 }
 
 /** Builds the single-item clipboard payload from the active editor's selection. */
-function collectEditorSelection(editor: TextEditor): { contents: ClipboardData[], totalBytes: number } {
-    const content = editor.document.getText(editor.selection);
+function collectEditorSelection(editor: TextEditor): { contents: ClipboardData[], totalBytes: number, skippedBinary: string[] } {
+    const content = maybeCompress(editor.document.getText(editor.selection));
     return {
         contents: [{ path: "-", content }],
-        totalBytes: Buffer.byteLength(content, 'utf-8')
+        totalBytes: Buffer.byteLength(content, 'utf-8'),
+        skippedBinary: []
     };
 }
 
-/** Reads every file under the selected files/folders, relativized to their common ancestor. */
-async function collectDirectoryContents(dirs: Uri[]): Promise<{ contents: ClipboardData[] | undefined, totalBytes: number }> {
+/**
+ * Reads every file under the selected files/folders, relativized to their
+ * common ancestor. Binary files (images, archives, etc.) are skipped —
+ * Cloud Clipboard has no binary storage support and reading them as UTF-8
+ * text would silently corrupt them — and returned separately so the caller
+ * can tell the user what got left out. Large text content is compressed
+ * before being added, so `totalBytes` reflects what's actually uploaded.
+ */
+async function collectDirectoryContents(dirs: Uri[]): Promise<{ contents: ClipboardData[] | undefined, totalBytes: number, skippedBinary: string[] }> {
     const contents: ClipboardData[] = [];
+    const skippedBinary: string[] = [];
     let totalBytes = 0;
 
     const splitPaths = dirs.map(p => workspace.asRelativePath(p.path).split('/'));
@@ -99,22 +128,26 @@ async function collectDirectoryContents(dirs: Uri[]): Promise<{ contents: Clipbo
 
         for(const file of files.files){
             try{
-                totalBytes += (await workspace.fs.stat(file)).size;
+                const relativePath = workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/');
+                const rawBytes = await workspace.fs.readFile(file);
 
-                const fileContent = Buffer.from(await workspace.fs.readFile(file)).toString('utf-8');
-                contents.push({
-                    path: workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/'),
-                    content: fileContent
-                });
+                if(isBinaryFile(relativePath, rawBytes)){
+                    skippedBinary.push(relativePath);
+                    continue;
+                }
+
+                const content = maybeCompress(Buffer.from(rawBytes).toString('utf-8'));
+                totalBytes += Buffer.byteLength(content, 'utf-8');
+                contents.push({ path: relativePath, content });
             }catch(error){
                 console.error(error);
                 window.showErrorMessage(`Copy: "${workspace.asRelativePath(file)}" Failed`);
-                return { contents: undefined, totalBytes };
+                return { contents: undefined, totalBytes, skippedBinary };
             }
         }
     }
 
-    return { contents, totalBytes };
+    return { contents, totalBytes, skippedBinary };
 }
 
 function copyStatus(status: number | undefined, text: string | undefined, totalBytes: number, clipboard: string){
@@ -124,6 +157,10 @@ function copyStatus(status: number | undefined, text: string | undefined, totalB
         window.showErrorMessage(`Copy: Total selected files are too big, your selection is ${(totalBytes / 1048576).toFixed(2)} MiB. (This limit depends on the specific API endpoint being used)`);
     }else if(status === 0 && text === "AbortError"){
         window.showErrorMessage("Copy: Cancelled");
+    }else if(status === 0 && text === "Timeout"){
+        window.showErrorMessage("Copy: Timed out waiting for the server. Check your connection or endpoint setting.");
+    }else if(status === 0 && text === "NetworkError"){
+        window.showErrorMessage("Copy: Could not reach the server. Check your connection or endpoint setting.");
     }else{
         window.showErrorMessage("An error occurred while copying to cloud clipboard.");
     }

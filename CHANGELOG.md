@@ -1,3 +1,13 @@
+## 1.6.0 - 2026 August 27
+### Add
+- Paste confirmation dialog shows the file count when there are multiple files (e.g. `Paste "name"?` vs. `Paste "name" (3 files)?`)
+### Fix
+- Progress notification (e.g. "Copy", "Paste", "Delete", "Getting Clipboards...") staying stuck on screen until an info/warning message was dismissed, instead of closing immediately
+### Improve
+- Automatic compression for clipboard content over 10KB before upload, reducing transfer size and Firestore storage
+- Notification and automatic skip for image/binary files during copy (not supported by Cloud Clipboard) — folders/selections with a mix of text and binary files now copy the text files and list what was skipped
+- Retry with backoff and a request timeout for copy/paste/delete, with distinct messages for a timed-out vs. unreachable server instead of one generic error
+
 ## 1.4.2 - 2026 March 27
 ### Add
 - Control panel UI for managing clipboards when using the default API endpoint (visit extension details for info.)

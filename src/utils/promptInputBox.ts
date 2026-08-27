@@ -11,6 +11,13 @@ export interface InputBoxPromptOptions {
     token?: CancellationToken;
 }
 
+/**
+ * Shows an InputBox and resolves with the entered value, or undefined if
+ * the user cancels. If `validate` is provided, it's used both for live
+ * validation messages and to block acceptance (Enter) while the current
+ * value is invalid. Wraps the create/show/onDidAccept/onDidHide/dispose
+ * boilerplate that was previously repeated for every file/folder name prompt.
+ */
 export default function promptInputBox(options: InputBoxPromptOptions): Promise<string | undefined> {
     return new Promise<string | undefined>((resolve) => {
         const box = window.createInputBox();

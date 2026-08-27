@@ -1,5 +1,11 @@
 import { ExtensionContext, StatusBarAlignment, window, workspace } from "vscode";
 
+/**
+ * Creates a status bar item showing the configured namespace (or a
+ * "Not Configured" prompt), with the endpoint in the tooltip. Clicking it
+ * opens Cloud Clipboard settings. Refreshes whenever the configuration
+ * changes.
+ */
 export default function createStatusBarItem(context: ExtensionContext) {
     const item = window.createStatusBarItem(StatusBarAlignment.Right, 100);
     item.command = {

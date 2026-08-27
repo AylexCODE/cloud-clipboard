@@ -13,7 +13,7 @@ import confirmPaste from "../utils/confirmPaste";
 import getNonCollidingPath from "../utils/getNonCollidingPath";
 import { ClipboardData } from "../types";
 
-export default async function paste(dir: string | undefined, context: ExtensionContext) {
+export default async function paste(dir: string | undefined, _context: ExtensionContext) {
     try{
         const config = workspace.getConfiguration("cloudclipboard");
 
@@ -67,7 +67,7 @@ export default async function paste(dir: string | undefined, context: ExtensionC
             const clipboard: ClipboardData[] = fetched;
 
             if(config.get<boolean>("confirmPaste", true)){
-                const confirmed = await confirmPaste(clipboardName, clipboard.length);
+                const confirmed = await confirmPaste(clipboardName, clipboard);
                 if(!confirmed){
                     window.showWarningMessage("Paste: Cancelled");
                     return;

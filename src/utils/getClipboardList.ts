@@ -1,6 +1,8 @@
 import { window, WorkspaceConfiguration } from "vscode";
 import isSecureEndpoint from "./isSecureEndpoint";
 import { ClipboardSummary } from "../types";
+import apiFetch from "./apiFetch";
+import describeApiFetchError from "./describeApiFetchError";
 
 export default async function getClipboards(config: WorkspaceConfiguration): Promise<ClipboardSummary[] | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
@@ -13,12 +15,13 @@ export default async function getClipboards(config: WorkspaceConfiguration): Pro
     }
 
     try{
-        const connections = await fetch(`${endpoint}/list?namespace=${clipboardNamespace}&sort=${config.get<string>("sortResults")!}`);
-        if(connections.statusText == "Not Found" && connections.status == 404) return undefined;
+        const connections = await apiFetch(`${endpoint}/list?namespace=${clipboardNamespace}&sort=${config.get<string>("sortResults")!}`);
+        if(connections.statusText === "Not Found" && connections.status === 404) return undefined;
         return normalizeClipboardList(await connections.json());
     }catch(error){
         console.error(error);
-        window.showErrorMessage("An error occurred. Error ID: GET_CLIPBOARDS");
+        const { message } = describeApiFetchError(error, "Paste");
+        window.showErrorMessage(message);
         return [];
     }
 }

@@ -1,8 +1,7 @@
 import { CancellationToken, window, WorkspaceConfiguration } from "vscode";
 import { ClipboardData } from "../types";
 import isSecureEndpoint from "./isSecureEndpoint";
-
-import { setTimeout } from "timers/promises";
+import apiFetch, { ApiFetchError } from "./apiFetch";
 
 export default async function saveClipboardContent(config: WorkspaceConfiguration, clipboard: string, content: ClipboardData[], token: CancellationToken): Promise<{ status: number, text: string } | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
@@ -14,29 +13,30 @@ export default async function saveClipboardContent(config: WorkspaceConfiguratio
         return undefined;
     }
 
+    // Bridge VS Code's CancellationToken to a standard AbortSignal so apiFetch
+    // (which knows nothing about vscode) can cancel the in-flight request/retries.
     const controller = new AbortController();
-    token.onCancellationRequested(() => {
-        controller.abort();
-    });
+    token.onCancellationRequested(() => controller.abort());
 
     try{
-        const clipboardRes = await fetch(`${endpoint}?namespace=${clipboardNamespace}&clipboard=${clipboard}`, {
+        const clipboardRes = await apiFetch(`${endpoint}?namespace=${clipboardNamespace}&clipboard=${clipboard}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
             },
             body: JSON.stringify(content),
-            signal: controller.signal
+            externalSignal: controller.signal
         });
 
         return {status: clipboardRes.status, text: clipboardRes.statusText};
-    }catch(error: any){
-        if(error.name === "AbortError"){
-            return {status: 0, text: "AbortError"};
-        }else{
-            console.error(error);
-            window.showErrorMessage("An error occurred. Error ID: SAVE_CLIPBOARD");
-            return {status: 400, text: "Unknown"};
+    }catch(error){
+        if(error instanceof ApiFetchError){
+            if(error.kind === "aborted") return {status: 0, text: "AbortError"};
+            if(error.kind === "timeout") return {status: 0, text: "Timeout"};
+            return {status: 0, text: "NetworkError"};
         }
+        console.error(error);
+        window.showErrorMessage("An error occurred. Error ID: SAVE_CLIPBOARD");
+        return {status: 400, text: "Unknown"};
     }
 }

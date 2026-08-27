@@ -3,5 +3,7 @@
 node_modules
 src/
 tsconfig.json
+eslint.config.mjs
+vitest.config.mts
 *.vsix
 img/demo

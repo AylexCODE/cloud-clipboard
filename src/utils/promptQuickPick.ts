@@ -14,6 +14,14 @@ export interface QuickPickPromptOptions {
     token?: CancellationToken;
 }
 
+/**
+ * Shows a QuickPick and resolves with the selected label(s), or undefined
+ * if the user cancels (Escape, clicking away, or the linked cancellation
+ * token firing). Items can be plain strings or {label, description, detail}
+ * objects for showing extra metadata (e.g. clipboard size/file count).
+ * Wraps the create/show/onDidAccept/onDidHide/dispose boilerplate that was
+ * previously repeated in every command.
+ */
 export default function promptQuickPick(options: QuickPickPromptOptions): Promise<string[] | undefined> {
     return new Promise<string[] | undefined>((resolve) => {
         const quickPick = window.createQuickPick();

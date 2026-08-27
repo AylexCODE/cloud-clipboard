@@ -3,6 +3,11 @@ import { commands, ExtensionContext, window, WorkspaceConfiguration } from "vsco
 const DEFAULT_ENDPOINT = "https://cloud-clipboard-api.onrender.com";
 const ACKNOWLEDGED_KEY = "cloudclipboard.defaultEndpointAcknowledged";
 
+/**
+ * Shows a one-time notice (persisted in globalState) when the user is on
+ * the default shared API endpoint, making clear that clipboard content
+ * passes through a third-party server unless they configure their own.
+ */
 export default function warnIfDefaultEndpoint(context: ExtensionContext, config: WorkspaceConfiguration) {
     const endpoint = config.get<string>("endpoint")!.trim();
     if(endpoint !== DEFAULT_ENDPOINT) return;

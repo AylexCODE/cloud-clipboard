@@ -1,5 +1,11 @@
 import { Uri, workspace } from "vscode";
 
+/**
+ * Given a file path that already exists, returns a sibling path that
+ * doesn't collide, by appending " (1)", " (2)", etc. before the extension.
+ * Used for the paste "Keep Both" option so a conflicting file can be saved
+ * alongside the existing one instead of overwriting or being skipped.
+ */
 export default async function getNonCollidingPath(filePath: Uri): Promise<Uri> {
     const lastSlash = filePath.path.lastIndexOf("/");
     const dir = filePath.path.slice(0, lastSlash);

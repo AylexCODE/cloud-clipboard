@@ -2,3 +2,6 @@ out
 node_modules
 .vscode-test/
 *.vsix
+*.test.ts
+eslint.config.mjs
+vitest.config.mts
