@@ -1,4 +1,4 @@
-import { ExtensionContext, ProgressLocation, TextEditor, Uri, window, workspace } from "vscode";
+import { ExtensionContext, Progress, ProgressLocation, TextEditor, Uri, window, workspace } from "vscode";
 import { ClipboardData } from "../types";
 import saveClipboardContent from "../utils/saveClipboardContent";
 import getFiles from "../utils/getFiles";
@@ -7,14 +7,16 @@ import showConfigMessage from "../utils/showConfigMessage";
 import withSlowNotice from "../utils/withSlowNotice";
 import isBinaryFile from "../utils/isBinaryFile";
 import { maybeCompress } from "../utils/compression";
+import { getActiveNamespace } from "../utils/activeNamespace";
 
 const MAX_LISTED_SKIPPED_FILES = 10;
 
-export default async function copy(dirs: Uri[] | undefined, _context: ExtensionContext){
+export default async function copy(dirs: Uri[] | undefined, context: ExtensionContext){
     try{
         const config = workspace.getConfiguration("cloudclipboard");
+        const namespace = getActiveNamespace(context);
 
-        if(config.get<string>("endpoint")!.trim().length === 0 || config.get<string>("namespace")!.trim().length === 0) {
+        if(config.get<string>("endpoint")!.trim().length === 0 || namespace.trim().length === 0) {
             return showConfigMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
         }
 
@@ -57,7 +59,7 @@ export default async function copy(dirs: Uri[] | undefined, _context: ExtensionC
 
             const { contents, totalBytes, skippedBinary } = dirs === undefined
                 ? collectEditorSelection(editor!)
-                : await collectDirectoryContents(dirs);
+                : await collectDirectoryContents(dirs, progress);
 
             if(contents === undefined) return; // error already shown by collectDirectoryContents
 
@@ -72,8 +74,10 @@ export default async function copy(dirs: Uri[] | undefined, _context: ExtensionC
                 return;
             }
 
+            progress.report({ message: `Uploading "${clipboard}"...` });
+
             const saveStatus = await withSlowNotice(
-                saveClipboardContent(config, clipboard, contents, token),
+                saveClipboardContent(config, namespace, clipboard, contents, token),
                 () => progress.report({ message: "Still uploading... this can take a moment on a cold server." })
             );
             if(saveStatus?.status === 404 && saveStatus.text === "Not Found") {
@@ -107,7 +111,7 @@ function collectEditorSelection(editor: TextEditor): { contents: ClipboardData[]
  * can tell the user what got left out. Large text content is compressed
  * before being added, so `totalBytes` reflects what's actually uploaded.
  */
-async function collectDirectoryContents(dirs: Uri[]): Promise<{ contents: ClipboardData[] | undefined, totalBytes: number, skippedBinary: string[] }> {
+async function collectDirectoryContents(dirs: Uri[], progress: Progress<{ message?: string, increment?: number }>): Promise<{ contents: ClipboardData[] | undefined, totalBytes: number, skippedBinary: string[] }> {
     const contents: ClipboardData[] = [];
     const skippedBinary: string[] = [];
     let totalBytes = 0;
@@ -123,27 +127,31 @@ async function collectDirectoryContents(dirs: Uri[]): Promise<{ contents: Clipbo
         commonCount++;
     }
 
-    for(const dir of dirs){
-        const files = await getFiles(dir);
+    const fileLists = await Promise.all(dirs.map(dir => getFiles(dir)));
+    const allFiles = fileLists.flatMap(f => f.files);
+    // Increment is a percentage (0-100) VS Code accumulates across calls; splitting it
+    // evenly per file gives real feedback on larger folders instead of one indeterminate spin.
+    const incrementPerFile = allFiles.length > 0 ? 100 / allFiles.length : 0;
 
-        for(const file of files.files){
-            try{
-                const relativePath = workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/');
-                const rawBytes = await workspace.fs.readFile(file);
+    for(const file of allFiles){
+        try{
+            const relativePath = workspace.asRelativePath(file.path).split('/').slice(commonCount).join('/');
+            progress.report({ message: `Reading ${relativePath}`, increment: incrementPerFile });
 
-                if(isBinaryFile(relativePath, rawBytes)){
-                    skippedBinary.push(relativePath);
-                    continue;
-                }
+            const rawBytes = await workspace.fs.readFile(file);
 
-                const content = maybeCompress(Buffer.from(rawBytes).toString('utf-8'));
-                totalBytes += Buffer.byteLength(content, 'utf-8');
-                contents.push({ path: relativePath, content });
-            }catch(error){
-                console.error(error);
-                window.showErrorMessage(`Copy: "${workspace.asRelativePath(file)}" Failed`);
-                return { contents: undefined, totalBytes, skippedBinary };
+            if(isBinaryFile(relativePath, rawBytes)){
+                skippedBinary.push(relativePath);
+                continue;
             }
+
+            const content = maybeCompress(Buffer.from(rawBytes).toString('utf-8'));
+            totalBytes += Buffer.byteLength(content, 'utf-8');
+            contents.push({ path: relativePath, content });
+        }catch(error){
+            console.error(error);
+            window.showErrorMessage(`Copy: "${workspace.asRelativePath(file)}" Failed`);
+            return { contents: undefined, totalBytes, skippedBinary };
         }
     }
 

@@ -1,4 +1,12 @@
-## 1.6.0 - 2026 August 27
+## 1.1.1 - 2026 August 28
+### Add
+- Namespace profiles (`cloudclipboard.namespaceProfiles`) for naming and quickly switching between namespaces via the status bar or the new **Cloud Clipboard: Switch Namespace Profile** command
+- Explicit `onStartupFinished` activation event, so the extension activates after startup
+- Status bar item that opens the namespace switcher
+### Change
+- Active namespace now lives in extension storage (workspace/global state) instead of the single `cloudclipboard.namespace` setting, so different workspaces can remember different active profiles
+
+## 1.1.0 - 2026 August 27
 ### Add
 - Paste confirmation dialog shows the file count when there are multiple files (e.g. `Paste "name"?` vs. `Paste "name" (3 files)?`)
 ### Fix
@@ -8,7 +16,7 @@
 - Notification and automatic skip for image/binary files during copy (not supported by Cloud Clipboard) — folders/selections with a mix of text and binary files now copy the text files and list what was skipped
 - Retry with backoff and a request timeout for copy/paste/delete, with distinct messages for a timed-out vs. unreachable server instead of one generic error
 
-## 1.4.2 - 2026 March 27
+## 1.0.0 - 2026 March 27
 ### Add
 - Control panel UI for managing clipboards when using the default API endpoint (visit extension details for info.)
 

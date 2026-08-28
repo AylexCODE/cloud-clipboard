@@ -12,10 +12,12 @@ import formatClipboardSummary from "../utils/formatClipboardSummary";
 import confirmPaste from "../utils/confirmPaste";
 import getNonCollidingPath from "../utils/getNonCollidingPath";
 import { ClipboardData } from "../types";
+import { getActiveNamespace } from "../utils/activeNamespace";
 
-export default async function paste(dir: string | undefined, _context: ExtensionContext) {
+export default async function paste(dir: string | undefined, context: ExtensionContext) {
     try{
         const config = workspace.getConfiguration("cloudclipboard");
+        const namespace = getActiveNamespace(context);
 
         await window.withProgress({
             location: ProgressLocation.Notification,
@@ -24,7 +26,7 @@ export default async function paste(dir: string | undefined, _context: Extension
         }, async (progress, token) => {
             progress.report({ message: "Getting Clipboards..." });
             const connectionList = await withSlowNotice(
-                getClipboards(config),
+                getClipboards(config, namespace),
                 () => progress.report({ message: "Still waking up the server... this can take up to 30s on the first request." })
             );
 
@@ -33,7 +35,7 @@ export default async function paste(dir: string | undefined, _context: Extension
                 return;
             }
             if(connectionList.length === 0){
-                window.showWarningMessage(`Paste: Clipboard is empty for the namespace ${config.get<string>("namespace")!}.`);
+                window.showWarningMessage(`Paste: Clipboard is empty for the namespace ${namespace}.`);
                 return;
             }
 
@@ -52,7 +54,7 @@ export default async function paste(dir: string | undefined, _context: Extension
 
             progress.report({ message: `Getting Clipboard From "${clipboardName}"` });
             const fetched = await withSlowNotice(
-                getClipboardContent(config, clipboardName),
+                getClipboardContent(config, namespace, clipboardName),
                 () => progress.report({ message: "Still fetching... this can take a moment on a cold server." })
             );
             if(!fetched){

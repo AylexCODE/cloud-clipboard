@@ -4,9 +4,9 @@ import { ClipboardSummary } from "../types";
 import apiFetch from "./apiFetch";
 import describeApiFetchError from "./describeApiFetchError";
 
-export default async function getClipboards(config: WorkspaceConfiguration): Promise<ClipboardSummary[] | undefined> {
+export default async function getClipboards(config: WorkspaceConfiguration, namespace: string): Promise<ClipboardSummary[] | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
-    const clipboardNamespace: string = config.get<string>("namespace")!;
+    const clipboardNamespace: string = namespace;
 
     if(endpoint.trim().length === 0 || clipboardNamespace.trim().length === 0) return undefined;
     if(!isSecureEndpoint(endpoint)) {

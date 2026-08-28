@@ -3,9 +3,9 @@ import { ClipboardData } from "../types";
 import isSecureEndpoint from "./isSecureEndpoint";
 import apiFetch, { ApiFetchError } from "./apiFetch";
 
-export default async function saveClipboardContent(config: WorkspaceConfiguration, clipboard: string, content: ClipboardData[], token: CancellationToken): Promise<{ status: number, text: string } | undefined> {
+export default async function saveClipboardContent(config: WorkspaceConfiguration, namespace: string, clipboard: string, content: ClipboardData[], token: CancellationToken): Promise<{ status: number, text: string } | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
-    const clipboardNamespace: string = config.get<string>("namespace")!;
+    const clipboardNamespace: string = namespace;
 
     if(endpoint.trim().length === 0 || clipboardNamespace.trim().length === 0) return undefined;
     if(!isSecureEndpoint(endpoint)) {

@@ -3,9 +3,9 @@ import isSecureEndpoint from "./isSecureEndpoint";
 import apiFetch from "./apiFetch";
 import describeApiFetchError from "./describeApiFetchError";
 
-export default async function deleteClipboard(config: WorkspaceConfiguration, clipboards: string[]): Promise<number | undefined> {
+export default async function deleteClipboard(config: WorkspaceConfiguration, namespace: string, clipboards: string[]): Promise<number | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
-    const clipboardNamespace: string = config.get<string>("namespace")!;
+    const clipboardNamespace: string = namespace;
 
     if(endpoint.trim().length === 0 || clipboardNamespace.trim().length === 0) return undefined;
     if(!isSecureEndpoint(endpoint)) {

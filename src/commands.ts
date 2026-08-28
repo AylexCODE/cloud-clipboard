@@ -3,6 +3,7 @@ import paste from "./commands/paste";
 import copy from "./commands/copy";
 import getDirectory from "./utils/getDirectory";
 import del from "./commands/delete";
+import switchNamespaceProfile from "./commands/switchNamespaceProfile";
 
 export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri, uris: Uri[]) => {
@@ -26,5 +27,6 @@ export default function registerAllCommands(context: ExtensionContext) {
         }catch(error){console.error(error); window.showErrorMessage('Error selecting directory.')}
     }));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.editorPaste', () => {paste(undefined, context)}));
-    context.subscriptions.push(commands.registerCommand('cloudclipboard.delete', () => {del()}));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.delete', () => {del(context)}));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.switchNamespaceProfile', () => {switchNamespaceProfile(context)}));
 }

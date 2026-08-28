@@ -1,14 +1,16 @@
-import { ProgressLocation, window, workspace } from "vscode";
+import { ExtensionContext, ProgressLocation, window, workspace } from "vscode";
 import getClipboards from "../utils/getClipboardList";
 import deleteClipboard from "../utils/deleteClipboard";
 import showConfigMessage from "../utils/showConfigMessage";
 import promptQuickPick from "../utils/promptQuickPick";
 import withSlowNotice from "../utils/withSlowNotice";
 import formatClipboardSummary from "../utils/formatClipboardSummary";
+import { getActiveNamespace } from "../utils/activeNamespace";
 
-export default async function del() {
+export default async function del(context: ExtensionContext) {
     try{
         const config = workspace.getConfiguration("cloudclipboard");
+        const namespace = getActiveNamespace(context);
 
         await window.withProgress({
             location: ProgressLocation.Notification,
@@ -17,7 +19,7 @@ export default async function del() {
         }, async (progress, token) => {
             progress.report({ message: "Getting Clipboards..." });
             const connectionList = await withSlowNotice(
-                getClipboards(config),
+                getClipboards(config, namespace),
                 () => progress.report({ message: "Still waking up the server... this can take up to 30s on the first request." })
             );
 
@@ -27,7 +29,7 @@ export default async function del() {
             }
 
             if(connectionList.length === 0){
-                window.showWarningMessage(`Delete: Clipboard is empty for the namespace ${config.get<string>("namespace")!}.`);
+                window.showWarningMessage(`Delete: Clipboard is empty for the namespace ${namespace}.`);
                 return;
             }
 
@@ -59,7 +61,7 @@ export default async function del() {
 
             progress.report({ message: "Deleting clipboards..." });
             const status = await withSlowNotice(
-                deleteClipboard(config, selected),
+                deleteClipboard(config, namespace, selected),
                 () => progress.report({ message: "Still deleting... this can take a moment on a cold server." })
             );
 

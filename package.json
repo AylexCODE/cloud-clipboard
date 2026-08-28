@@ -2,7 +2,7 @@
 	"name": "cloud-clipboard",
 	"displayName": "Cloud Clipboard",
 	"description": "Copy and paste text, files, or folders across any VS Code instance.",
-	"version": "1.6.0",
+	"version": "1.1.1",
 	"publisher": "AylexCODE",
 	"license": "MIT",
 	"icon": "img/icon.png",
@@ -20,14 +20,18 @@
 		"Other"
 	],
 	"main": "./out/extension.js",
+	"activationEvents": ["onStartupFinished"],
 	"contributes": {
 		"configuration": {
 			"title": "Cloud Clipboard",
 			"properties": {
-				"cloudclipboard.namespace": {
-					"type": "string",
-					"default": "",
-					"description": "Clipboard Namespace."
+				"cloudclipboard.namespaceProfiles": {
+					"type": "object",
+					"default": {},
+					"additionalProperties": {
+						"type": "string"
+					},
+					"markdownDescription": "Named namespace profiles for quick switching from the status bar or **Cloud Clipboard: Switch Namespace Profile**. Example: `{ \"Work\": \"work.namespace\", \"Personal\": \"my.namespace\" }`."
 				},
 				"cloudclipboard.sortResults": {
 					"type": "string",
@@ -79,6 +83,11 @@
 			{
 				"command": "cloudclipboard.delete",
 				"title": "Delete"
+			},
+			{
+				"command": "cloudclipboard.switchNamespaceProfile",
+				"title": "Switch Namespace Profile",
+				"category": "Cloud Clipboard"
 			},
 			{
 				"command": "cloudclipboard.editorCopy",

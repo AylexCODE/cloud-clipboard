@@ -5,9 +5,9 @@ import apiFetch from "./apiFetch";
 import describeApiFetchError from "./describeApiFetchError";
 import { maybeDecompress } from "./compression";
 
-export default async function getClipboardContent(config: WorkspaceConfiguration, clipboard: string): Promise<ClipboardData[] | undefined> {
+export default async function getClipboardContent(config: WorkspaceConfiguration, namespace: string, clipboard: string): Promise<ClipboardData[] | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
-    const clipboardNamespace: string = config.get<string>("namespace")!;
+    const clipboardNamespace: string = namespace;
 
     if(endpoint.trim().length === 0 || clipboardNamespace.trim().length === 0) return undefined;
     if(!isSecureEndpoint(endpoint)) {
