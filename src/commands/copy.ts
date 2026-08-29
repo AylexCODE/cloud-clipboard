@@ -16,6 +16,11 @@ export default async function copy(dirs: Uri[] | undefined, context: ExtensionCo
         const config = workspace.getConfiguration("cloudclipboard");
         const namespace = getActiveNamespace(context);
 
+        if(!namespace){
+            showConfigMessage("Cloud Clipboard namespace is not configured. Please configure it in the extension settings.", "info", "namespace");
+            return;
+        }
+
         if(config.get<string>("endpoint")!.trim().length === 0 || namespace.trim().length === 0) {
             return showConfigMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
         }

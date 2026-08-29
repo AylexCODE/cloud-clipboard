@@ -1,10 +1,12 @@
-import { window, WorkspaceConfiguration } from "vscode";
+import { ExtensionContext, window, WorkspaceConfiguration } from "vscode";
 import isSecureEndpoint from "./isSecureEndpoint";
-import { ClipboardSummary } from "../types";
-import apiFetch from "./apiFetch";
+import { CacheAwareResult, ClipboardSummary } from "../types";
+import apiFetch, { ApiFetchError } from "./apiFetch";
 import describeApiFetchError from "./describeApiFetchError";
+import { getCachedList, setCachedList } from "./clipboardCache";
+import formatRelativeTime from "./formatRelativeTime";
 
-export default async function getClipboards(config: WorkspaceConfiguration, namespace: string): Promise<ClipboardSummary[] | undefined> {
+export default async function getClipboards(config: WorkspaceConfiguration, namespace: string, context: ExtensionContext): Promise<CacheAwareResult<ClipboardSummary[]> | undefined> {
     const endpoint: string = config.get<string>("endpoint")!;
     const clipboardNamespace: string = namespace;
 
@@ -17,12 +19,30 @@ export default async function getClipboards(config: WorkspaceConfiguration, name
     try{
         const connections = await apiFetch(`${endpoint}/list?namespace=${clipboardNamespace}&sort=${config.get<string>("sortResults")!}`);
         if(connections.statusText === "Not Found" && connections.status === 404) return undefined;
-        return normalizeClipboardList(await connections.json());
+
+        const list = normalizeClipboardList(await connections.json());
+        setCachedList(context, clipboardNamespace, list); // fire-and-forget: never block a successful fetch on a cache write
+        return { data: list, stale: false };
     }catch(error){
         console.error(error);
+
+        // A user-initiated cancel isn't "offline" — don't fall back to cache, just report it.
+        if(error instanceof ApiFetchError && error.kind === "aborted"){
+            const { message } = describeApiFetchError(error, "Paste");
+            window.showErrorMessage(message);
+            return undefined;
+        }
+
+        const cached = getCachedList(context, clipboardNamespace);
+        if(cached){
+            const age = formatRelativeTime(cached.fetchedAt) ?? "a while ago";
+            window.showWarningMessage(`Paste: Server unreachable. Showing cached results from ${age} — this list may be out of date.`);
+            return { data: cached.data, stale: true, fetchedAt: cached.fetchedAt };
+        }
+
         const { message } = describeApiFetchError(error, "Paste");
         window.showErrorMessage(message);
-        return [];
+        return undefined;
     }
 }
 

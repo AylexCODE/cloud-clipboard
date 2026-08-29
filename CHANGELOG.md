@@ -1,3 +1,13 @@
+## 1.3.0 - 2026 August 29
+### Add
+- Offline fallback: if the server is unreachable, paste and delete now fall back to the last-fetched clipboard list/content instead of failing outright, clearly marked as cached and showing how old it is
+
+## 1.2.0 - 2026 August 29
+### Add
+- Typing empty (or whitespace-only) into "Type a Namespace..." now unsets the active namespace, same as if it had never been set
+### Change
+- If the namespaceProfiles entry the active namespace came from is edited directly in settings.json, the active namespace now follows: repointed to a new value, it updates automatically; removed entirely (or repointed to blank), it's unset
+
 ## 1.1.1 - 2026 August 28
 ### Add
 - Namespace profiles (`cloudclipboard.namespaceProfiles`) for naming and quickly switching between namespaces via the status bar or the new **Cloud Clipboard: Switch Namespace Profile** command

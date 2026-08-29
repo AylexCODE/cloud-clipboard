@@ -18,6 +18,11 @@ export default async function paste(dir: string | undefined, context: ExtensionC
     try{
         const config = workspace.getConfiguration("cloudclipboard");
         const namespace = getActiveNamespace(context);
+        
+        if(!namespace){
+            showConfigMessage("Cloud Clipboard namespace is not configured. Please configure it in the extension settings.", "info", "namespace");
+            return;
+        }
 
         await window.withProgress({
             location: ProgressLocation.Notification,
@@ -26,7 +31,7 @@ export default async function paste(dir: string | undefined, context: ExtensionC
         }, async (progress, token) => {
             progress.report({ message: "Getting Clipboards..." });
             const connectionList = await withSlowNotice(
-                getClipboards(config, namespace),
+                getClipboards(config, namespace, context),
                 () => progress.report({ message: "Still waking up the server... this can take up to 30s on the first request." })
             );
 
@@ -34,15 +39,15 @@ export default async function paste(dir: string | undefined, context: ExtensionC
                 showConfigMessage("Cloud Clipboard is not configured correctly. Please configure it in the extension settings.");
                 return;
             }
-            if(connectionList.length === 0){
+            if(connectionList.data.length === 0){
                 window.showWarningMessage(`Paste: Clipboard is empty for the namespace ${namespace}.`);
                 return;
             }
 
             progress.report({ message: "Select Clipboard" });
             const selected = await promptQuickPick({
-                items: connectionList.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
-                title: "Select Clipboard",
+                items: connectionList.data.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
+                title: connectionList.stale ? "Select Clipboard (cached — offline)" : "Select Clipboard",
                 ignoreFocusOut: config.get<boolean>("persistInputBox", true),
                 token
             });
@@ -54,19 +59,19 @@ export default async function paste(dir: string | undefined, context: ExtensionC
 
             progress.report({ message: `Getting Clipboard From "${clipboardName}"` });
             const fetched = await withSlowNotice(
-                getClipboardContent(config, namespace, clipboardName),
+                getClipboardContent(config, namespace, clipboardName, context),
                 () => progress.report({ message: "Still fetching... this can take a moment on a cold server." })
             );
             if(!fetched){
                 window.showWarningMessage("Paste: Error");
                 return;
             }
-            if(fetched.length === 0){
+            if(fetched.data.length === 0){
                 window.showWarningMessage("Paste: Cancelled, clipboard is empty.");
                 return;
             }
 
-            const clipboard: ClipboardData[] = fetched;
+            const clipboard: ClipboardData[] = fetched.data;
 
             if(config.get<boolean>("confirmPaste", true)){
                 const confirmed = await confirmPaste(clipboardName, clipboard);

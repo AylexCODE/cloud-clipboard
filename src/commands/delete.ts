@@ -12,6 +12,11 @@ export default async function del(context: ExtensionContext) {
         const config = workspace.getConfiguration("cloudclipboard");
         const namespace = getActiveNamespace(context);
 
+        if(!namespace){
+            showConfigMessage("Cloud Clipboard namespace is not configured. Please configure it in the extension settings.", "info", "namespace");
+            return;
+        }
+
         await window.withProgress({
             location: ProgressLocation.Notification,
             title: "Delete",
@@ -19,7 +24,7 @@ export default async function del(context: ExtensionContext) {
         }, async (progress, token) => {
             progress.report({ message: "Getting Clipboards..." });
             const connectionList = await withSlowNotice(
-                getClipboards(config, namespace),
+                getClipboards(config, namespace, context),
                 () => progress.report({ message: "Still waking up the server... this can take up to 30s on the first request." })
             );
 
@@ -28,15 +33,19 @@ export default async function del(context: ExtensionContext) {
                 return;
             }
 
-            if(connectionList.length === 0){
+            if(connectionList.data.length === 0){
                 window.showWarningMessage(`Delete: Clipboard is empty for the namespace ${namespace}.`);
                 return;
             }
 
+            if(connectionList.stale){
+                window.showWarningMessage("Delete: This list is from cache (server unreachable) — it may not reflect what's actually stored. Deleting is not recommended until the connection is restored.");
+            }
+
             progress.report({ message: "Select Clipboards" });
             const selected = await promptQuickPick({
-                items: connectionList.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
-                title: "Select Clipboards",
+                items: connectionList.data.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
+                title: connectionList.stale ? "Select Clipboards (cached — offline)" : "Select Clipboards",
                 canSelectMany: true,
                 ignoreFocusOut: config.get<boolean>("persistInputBox", true),
                 token

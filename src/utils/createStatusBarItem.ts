@@ -18,7 +18,17 @@ export default function createStatusBarItem(context: ExtensionContext) {
         const namespace = getActiveNamespace(context).trim();
         const endpoint = config.get<string>("endpoint")!.trim();
 
-        if(!namespace || !endpoint){
+        
+        if(!namespace){
+            item.text = "$(cloud) Cloud Clipboard: Not Configured";
+            item.tooltip = "Click to configure Cloud Clipboard";
+            item.command = {
+                command: "cloudclipboard.switchNamespaceProfile",
+                title: "Switch Cloud Clipboard Namespace"
+            };
+            item.show();
+            return;
+        }else if(!endpoint){
             item.text = "$(cloud) Cloud Clipboard: Not Configured";
             item.tooltip = "Click to configure Cloud Clipboard";
             item.command = {

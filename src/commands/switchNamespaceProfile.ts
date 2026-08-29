@@ -1,10 +1,12 @@
 import { commands, ExtensionContext, QuickPickItem, window, workspace } from "vscode";
 import promptInputBox from "../utils/promptInputBox";
-import { getActiveNamespace, setActiveNamespace, defaultNamespaceScope } from "../utils/activeNamespace";
+import { getActiveNamespace, setActiveNamespace, clearActiveNamespace, defaultNamespaceScope } from "../utils/activeNamespace";
 
 interface ProfileQuickPickItem extends QuickPickItem {
     /** The namespace to switch to, or undefined for the "manage/type" escape-hatch items. */
     namespace?: string;
+    /** Name of the namespaceProfiles entry this item came from (undefined for "type a namespace"). */
+    profileName?: string;
     action?: "manage" | "typeCustom";
 }
 
@@ -26,7 +28,8 @@ export default async function switchNamespaceProfile(context: ExtensionContext) 
     const items: ProfileQuickPickItem[] = profileNames.map(name => ({
         label: `${profiles[name] === currentNamespace ? "$(check) " : "$(cloud) "}${name}`,
         description: profiles[name],
-        namespace: profiles[name]
+        namespace: profiles[name],
+        profileName: name
     }));
 
     items.push(
@@ -48,21 +51,37 @@ export default async function switchNamespaceProfile(context: ExtensionContext) 
     }
 
     let targetNamespace = picked.namespace;
+    // Undefined for "type a namespace" (manual entry, no linked profile);
+    // set below to the picked item's profile name otherwise.
+    let targetProfileName = picked.profileName;
 
     if(picked.action === "typeCustom"){
         targetNamespace = await promptInputBox({
-            prompt: "Enter namespace",
+            prompt: "Enter namespace (leave blank to unset)",
             title: "Switch Namespace",
             placeholder: "my.namespace",
             value: currentNamespace,
             ignoreFocusOut: config.get<boolean>("persistInputBox", true)
         });
-        if(!targetNamespace) return;
+        if(targetNamespace === undefined) return; // cancelled, e.g. Esc
+        targetProfileName = undefined;
     }
 
-    if(!targetNamespace || targetNamespace === currentNamespace) return;
+    // Blank input, and blank/whitespace-only profile values from
+    // cloudclipboard.namespaceProfiles, both mean "unset" rather than
+    // "switch to an empty namespace".
+    if(targetNamespace !== undefined && targetNamespace.trim().length === 0){
+        if(currentNamespace){
+            await clearActiveNamespace(context);
+            window.showInformationMessage("Cloud Clipboard: Namespace unset");
+        }
+        return;
+    }
 
-    await setActiveNamespace(context, targetNamespace, defaultNamespaceScope());
+    if(!targetNamespace || targetNamespace.trim() === currentNamespace.trim()) return;
+
+    targetNamespace = targetNamespace.trim();
+    await setActiveNamespace(context, targetNamespace, defaultNamespaceScope(), targetProfileName);
 
     window.showInformationMessage(`Cloud Clipboard: Switched to "${targetNamespace}"`);
 }
