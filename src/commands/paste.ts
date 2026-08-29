@@ -8,11 +8,12 @@ import showConfigMessage from "../utils/showConfigMessage";
 import promptQuickPick from "../utils/promptQuickPick";
 import promptInputBox from "../utils/promptInputBox";
 import withSlowNotice from "../utils/withSlowNotice";
-import formatClipboardSummary from "../utils/formatClipboardSummary";
 import confirmPaste from "../utils/confirmPaste";
 import getNonCollidingPath from "../utils/getNonCollidingPath";
 import { ClipboardData } from "../types";
 import { getActiveNamespace } from "../utils/activeNamespace";
+import { reconcilePinned } from "../utils/pinnedClipboards";
+import { buildClipboardPickItems, makePinToggleHandler } from "../utils/clipboardPickItems";
 
 export default async function paste(dir: string | undefined, context: ExtensionContext) {
     try{
@@ -43,13 +44,15 @@ export default async function paste(dir: string | undefined, context: ExtensionC
                 window.showWarningMessage(`Paste: Clipboard is empty for the namespace ${namespace}.`);
                 return;
             }
+            if(!connectionList.stale) reconcilePinned(context, namespace, connectionList.data.map(s => s.name)); // fire-and-forget
 
             progress.report({ message: "Select Clipboard" });
             const selected = await promptQuickPick({
-                items: connectionList.data.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
+                items: buildClipboardPickItems(context, namespace, connectionList.data),
                 title: connectionList.stale ? "Select Clipboard (cached — offline)" : "Select Clipboard",
                 ignoreFocusOut: config.get<boolean>("persistInputBox", true),
-                token
+                token,
+                onDidTriggerItemButton: makePinToggleHandler(context, namespace, connectionList.data)
             });
             if(!selected || selected.length === 0){
                 window.showWarningMessage("Paste: Cancelled");

@@ -4,8 +4,9 @@ import deleteClipboard from "../utils/deleteClipboard";
 import showConfigMessage from "../utils/showConfigMessage";
 import promptQuickPick from "../utils/promptQuickPick";
 import withSlowNotice from "../utils/withSlowNotice";
-import formatClipboardSummary from "../utils/formatClipboardSummary";
 import { getActiveNamespace } from "../utils/activeNamespace";
+import { reconcilePinned, removePinned } from "../utils/pinnedClipboards";
+import { buildClipboardPickItems, makePinToggleHandler } from "../utils/clipboardPickItems";
 
 export default async function del(context: ExtensionContext) {
     try{
@@ -41,14 +42,16 @@ export default async function del(context: ExtensionContext) {
             if(connectionList.stale){
                 window.showWarningMessage("Delete: This list is from cache (server unreachable) — it may not reflect what's actually stored. Deleting is not recommended until the connection is restored.");
             }
+            if(!connectionList.stale) reconcilePinned(context, namespace, connectionList.data.map(s => s.name)); // fire-and-forget
 
             progress.report({ message: "Select Clipboards" });
             const selected = await promptQuickPick({
-                items: connectionList.data.map(summary => ({ label: summary.name, description: formatClipboardSummary(summary) })),
+                items: buildClipboardPickItems(context, namespace, connectionList.data),
                 title: connectionList.stale ? "Select Clipboards (cached — offline)" : "Select Clipboards",
                 canSelectMany: true,
                 ignoreFocusOut: config.get<boolean>("persistInputBox", true),
-                token
+                token,
+                onDidTriggerItemButton: makePinToggleHandler(context, namespace, connectionList.data)
             });
 
             if(!selected || selected.length === 0){
@@ -76,6 +79,7 @@ export default async function del(context: ExtensionContext) {
 
             if(status === 200){
                 window.showInformationMessage(`Delete: ${selected.length} ${selected.length > 1 ? "items" : "item"} Successfully`);
+                await removePinned(context, namespace, selected);
                 return;
             }
 

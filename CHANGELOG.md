@@ -1,3 +1,7 @@
+## 1.4.0 - 2026 August 29
+### Add
+- Pin/star clipboards from the paste and delete pickers (client-side only — not synced to the server) — pinned items always sort first, and stay first even while filtering
+
 ## 1.3.0 - 2026 August 29
 ### Add
 - Offline fallback: if the server is unreachable, paste and delete now fall back to the last-fetched clipboard list/content instead of failing outright, clearly marked as cached and showing how old it is
