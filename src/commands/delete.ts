@@ -50,6 +50,8 @@ export default async function del(context: ExtensionContext) {
                 title: connectionList.stale ? "Select Clipboards (cached — offline)" : "Select Clipboards",
                 canSelectMany: true,
                 ignoreFocusOut: config.get<boolean>("persistInputBox", true),
+                matchOnDescription: true,
+                sortByLabel: false,
                 token,
                 onDidTriggerItemButton: makePinToggleHandler(context, namespace, connectionList.data)
             });

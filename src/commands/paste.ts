@@ -51,6 +51,8 @@ export default async function paste(dir: string | undefined, context: ExtensionC
                 items: buildClipboardPickItems(context, namespace, connectionList.data),
                 title: connectionList.stale ? "Select Clipboard (cached — offline)" : "Select Clipboard",
                 ignoreFocusOut: config.get<boolean>("persistInputBox", true),
+                matchOnDescription: true,
+                sortByLabel: false,
                 token,
                 onDidTriggerItemButton: makePinToggleHandler(context, namespace, connectionList.data)
             });

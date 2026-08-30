@@ -1,3 +1,7 @@
+## 1.4.1 - 2026 August 29
+## Improve
+- Paste/delete pickers now also match typed filter text against the description (size/file count/date), and no longer re-sort pinned items out of place while filtering
+
 ## 1.4.0 - 2026 August 29
 ### Add
 - Pin/star clipboards from the paste and delete pickers (client-side only — not synced to the server) — pinned items always sort first, and stay first even while filtering
