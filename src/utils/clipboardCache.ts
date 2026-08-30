@@ -98,3 +98,23 @@ export async function setCachedContent(context: ExtensionContext, namespace: str
     evictContentIfNeeded(entry);
     await writeStore(context, store);
 }
+
+export interface CacheStats {
+    namespaceCount: number;
+    /** Total cached clipboard-content entries across all namespaces. */
+    clipboardCount: number;
+}
+
+export function getCacheStats(context: ExtensionContext): CacheStats {
+    const store = readStore(context);
+    const namespaces = Object.values(store);
+    return {
+        namespaceCount: namespaces.length,
+        clipboardCount: namespaces.reduce((sum, entry) => sum + Object.keys(entry.content).length, 0)
+    };
+}
+
+/** Wipes the entire local offline cache (all namespaces). Only affects the offline fallback — nothing on the server is touched. */
+export async function clearCache(context: ExtensionContext): Promise<void> {
+    await writeStore(context, {});
+}

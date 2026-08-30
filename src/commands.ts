@@ -4,6 +4,7 @@ import copy from "./commands/copy";
 import getDirectory from "./utils/getDirectory";
 import del from "./commands/delete";
 import switchNamespaceProfile from "./commands/switchNamespaceProfile";
+import clearLocalCache from "./commands/clearCache";
 
 export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.copy', async(uri: Uri, uris: Uri[]) => {
@@ -29,4 +30,5 @@ export default function registerAllCommands(context: ExtensionContext) {
     context.subscriptions.push(commands.registerCommand('cloudclipboard.editorPaste', () => {paste(undefined, context)}));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.delete', () => {del(context)}));
     context.subscriptions.push(commands.registerCommand('cloudclipboard.switchNamespaceProfile', () => {switchNamespaceProfile(context)}));
+    context.subscriptions.push(commands.registerCommand('cloudclipboard.clearCache', () => {clearLocalCache(context)}));
 }

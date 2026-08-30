@@ -1,3 +1,7 @@
+## 1.5.0 - 2026 August 30
+### Add
+- **Cloud Clipboard: Clear Local Cache** command to manually wipe the offline fallback cache (with a confirmation showing how much is cached) — only affects the local fallback, nothing on the server
+
 ## 1.4.1 - 2026 August 29
 ## Improve
 - Paste/delete pickers now also match typed filter text against the description (size/file count/date), and no longer re-sort pinned items out of place while filtering
