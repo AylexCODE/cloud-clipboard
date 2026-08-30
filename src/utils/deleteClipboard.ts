@@ -14,7 +14,7 @@ export default async function deleteClipboard(config: WorkspaceConfiguration, na
     }
 
     try{
-        const deleteStatus = await apiFetch(`${endpoint}?namespace=${clipboardNamespace}`, {
+        const deleteStatus = await apiFetch(`${endpoint}?namespace=${encodeURIComponent(clipboardNamespace)}`, {
             method: "DELETE",
             headers: {
                 "Content-Type": "application/json"

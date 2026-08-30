@@ -18,7 +18,7 @@ export default async function getClipboardContent(config: WorkspaceConfiguration
     }
 
     try{
-        const response = await apiFetch(`${endpoint}/content?namespace=${clipboardNamespace}&clipboard=${clipboard}`);
+        const response = await apiFetch(`${endpoint}/content?namespace=${encodeURIComponent(clipboardNamespace)}&clipboard=${encodeURIComponent(clipboard)}`);
         const raw = await response.json() as ClipboardData[];
         // Decompression happens at this single boundary so everything downstream
         // (confirmPaste preview, pasteToEditor, pasteToExplorer) can treat content

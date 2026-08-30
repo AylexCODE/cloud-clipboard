@@ -19,7 +19,7 @@ export default async function saveClipboardContent(config: WorkspaceConfiguratio
     token.onCancellationRequested(() => controller.abort());
 
     try{
-        const clipboardRes = await apiFetch(`${endpoint}?namespace=${clipboardNamespace}&clipboard=${clipboard}`, {
+        const clipboardRes = await apiFetch(`${endpoint}?namespace=${encodeURIComponent(clipboardNamespace)}&clipboard=${encodeURIComponent(clipboard)}`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"

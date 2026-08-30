@@ -17,7 +17,7 @@ export default async function getClipboards(config: WorkspaceConfiguration, name
     }
 
     try{
-        const connections = await apiFetch(`${endpoint}/list?namespace=${clipboardNamespace}&sort=${config.get<string>("sortResults")!}`);
+        const connections = await apiFetch(`${endpoint}/list?namespace=${encodeURIComponent(clipboardNamespace)}&sort=${encodeURIComponent(config.get<string>("sortResults")!)}`);
         if(connections.statusText === "Not Found" && connections.status === 404) return undefined;
 
         const list = normalizeClipboardList(await connections.json());

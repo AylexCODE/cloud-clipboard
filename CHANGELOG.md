@@ -1,3 +1,7 @@
+## 1.6.0 - 2026 August 30
+### Fix
+- Namespace and clipboard names are now URL-encoded before being sent to the API — special characters (`&`, `#`, `+`, spaces, etc.) in a namespace or clipboard name no longer break the request or leak into other query parameters
+
 ## 1.5.0 - 2026 August 30
 ### Add
 - **Cloud Clipboard: Clear Local Cache** command to manually wipe the offline fallback cache (with a confirmation showing how much is cached) — only affects the local fallback, nothing on the server
