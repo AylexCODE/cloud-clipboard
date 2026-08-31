@@ -10,15 +10,6 @@ interface ProfileQuickPickItem extends QuickPickItem {
     action?: "manage" | "typeCustom";
 }
 
-/**
- * Shows a quick-pick of the namespaces configured under
- * `cloudclipboard.namespaceProfiles` and switches to whichever one is
- * picked. The active namespace lives in extension storage (see
- * activeNamespace.ts), not settings.json — written to workspace state when
- * a workspace/folder is open (so different projects can remember different
- * active profiles), falling back to global state otherwise (e.g.
- * single-file mode, where there's no workspace to scope a write to).
- */
 export default async function switchNamespaceProfile(context: ExtensionContext) {
     const config = workspace.getConfiguration("cloudclipboard");
     const profiles = config.get<Record<string, string>>("namespaceProfiles", {});
@@ -51,8 +42,6 @@ export default async function switchNamespaceProfile(context: ExtensionContext) 
     }
 
     let targetNamespace = picked.namespace;
-    // Undefined for "type a namespace" (manual entry, no linked profile);
-    // set below to the picked item's profile name otherwise.
     let targetProfileName = picked.profileName;
 
     if(picked.action === "typeCustom"){
@@ -67,9 +56,6 @@ export default async function switchNamespaceProfile(context: ExtensionContext) 
         targetProfileName = undefined;
     }
 
-    // Blank input, and blank/whitespace-only profile values from
-    // cloudclipboard.namespaceProfiles, both mean "unset" rather than
-    // "switch to an empty namespace".
     if(targetNamespace !== undefined && targetNamespace.trim().length === 0){
         if(currentNamespace){
             await clearActiveNamespace(context);

@@ -1,3 +1,7 @@
+## 1.6.1 - 2026 August 29
+### Add
+- Copy now checks the selection's size against the default API endpoint's 1 MiB limit before uploading (when using that endpoint), instead of only finding out via a failed upload after the round trip
+
 ## 1.6.0 - 2026 August 30
 ### Fix
 - Namespace and clipboard names are now URL-encoded before being sent to the API — special characters (`&`, `#`, `+`, spaces, etc.) in a namespace or clipboard name no longer break the request or leak into other query parameters

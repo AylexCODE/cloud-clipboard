@@ -8,6 +8,7 @@ import withSlowNotice from "../utils/withSlowNotice";
 import isBinaryFile from "../utils/isBinaryFile";
 import { maybeCompress } from "../utils/compression";
 import { getActiveNamespace } from "../utils/activeNamespace";
+import { DEFAULT_ENDPOINT, DEFAULT_ENDPOINT_MAX_UPLOAD_BYTES } from "../utils/defaultEndpoint";
 
 const MAX_LISTED_SKIPPED_FILES = 10;
 
@@ -76,6 +77,14 @@ export default async function copy(dirs: Uri[] | undefined, context: ExtensionCo
 
             if(contents.length === 0){
                 window.showWarningMessage("Copy: Nothing to copy — every selected file was an image/binary file, which Cloud Clipboard doesn't support.");
+                return;
+            }
+
+            // The 1 MiB cap is documented for the default shared endpoint only (see README);
+            // a self-hosted endpoint may allow more, so this check is skipped for those —
+            // the 413 handler below still catches an oversized upload in that case.
+            if(config.get<string>("endpoint")!.trim() === DEFAULT_ENDPOINT && totalBytes > DEFAULT_ENDPOINT_MAX_UPLOAD_BYTES){
+                window.showErrorMessage(`Copy: Your selection is ${(totalBytes / 1048576).toFixed(2)} MiB, which exceeds the default API endpoint's ${(DEFAULT_ENDPOINT_MAX_UPLOAD_BYTES / 1048576).toFixed(0)} MiB limit. Configure your own endpoint in settings to remove this limit.`);
                 return;
             }
 

@@ -1,6 +1,6 @@
 import { commands, ExtensionContext, window, WorkspaceConfiguration } from "vscode";
+import { DEFAULT_ENDPOINT } from "./defaultEndpoint";
 
-const DEFAULT_ENDPOINT = "https://cloud-clipboard-api.onrender.com";
 const ACKNOWLEDGED_KEY = "cloudclipboard.defaultEndpointAcknowledged";
 
 /**

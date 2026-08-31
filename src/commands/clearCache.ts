@@ -1,12 +1,6 @@
 import { ExtensionContext, window } from "vscode";
 import { clearCache, getCacheStats } from "../utils/clipboardCache";
 
-/**
- * Clears the local offline-fallback cache (see clipboardCache.ts) built up
- * by paste/delete on every successful fetch. Purely a client-side reset —
- * it has no effect on anything actually stored on the server, and doesn't
- * touch pinned clipboards.
- */
 export default async function clearLocalCache(context: ExtensionContext) {
     try{
         const stats = getCacheStats(context);

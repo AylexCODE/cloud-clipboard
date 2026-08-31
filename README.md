@@ -25,6 +25,10 @@
    - **Smart Routing:** Upon pasting files, you will be prompted for a folder name.
       - Enter a **path** to create a new directory for the content.
 - **Clipboard Management:** Delete saved clipboards to keep your cloud storage clean.
+- **Namespace Profiles:** Name and quickly switch between namespaces from the status bar or **Cloud Clipboard: Switch Namespace Profile**, instead of retyping them.
+- **Pin/Star:** Pin frequently-used clipboards from the paste/delete picker (click the star) so they always sort to the top — this is local to your machine, not synced to the server.
+- **Search/Filter:** Type in the paste/delete picker to filter by name or by size/file-count/date; pinned items stay pinned to the top even while filtering.
+- **Offline Fallback:** If the server is unreachable, paste and delete fall back to the last-fetched clipboard list/content instead of failing outright, clearly marked as cached. Use **Cloud Clipboard: Clear Local Cache** to wipe it manually — this only affects the local fallback, not anything on the server.
 
 ## Usage
 1. **Copy:** Right-click a selection, file, or folder in the Explorer and select **Cloud Clipboard: Copy**.
@@ -32,13 +36,17 @@
    - **As Text:** Right-click inside an open file and select **Cloud Clipboard: Paste**.
    - **As Files:** Right-click a folder or empty space in the Explorer and select **Cloud Clipboard: Paste.** Follow the prompt to specify a directory name.
 3. **Manage:** Use **Cloud Clipboard: Delete** to remove stored items.
+4. **Namespace:** Click the status bar item (or run **Cloud Clipboard: Switch Namespace Profile**) to switch namespaces, add a named profile, or type one directly. Leaving the input blank unsets the active namespace.
+5. **Pin:** In the paste/delete picker, click the star icon next to a clipboard to pin it to the top of the list.
+
+> **Offline:** If the server can't be reached, paste/delete automatically fall back to the last-fetched list/content for that namespace, with a warning that it may be out of date. Run **Cloud Clipboard: Clear Local Cache** any time to reset it.
 
 > You can **manage your clipboards** through the **control panel UI** when using the default API endpoint. Visit <a href="https://cloud-clipboard-api.onrender.com">https://cloud-clipboard-api.onrender.com</a> to get started.
 
 ### Limitations
 The following limitations apply only when using the default API Endpoint.
 - **Permanent Deletion:** Deletions are permanent and cannot be undone. 
-- **Total File Size:** The combined size of all selected files must not exceed **1MB**.
+- **Total File Size:** The combined size of all selected files must not exceed **1MB**. Copy checks this locally before uploading and blocks the attempt with an error if you're over, rather than waiting on a failed upload to find out.
 
 <details close>
 <summary>Example Usage</summary>
